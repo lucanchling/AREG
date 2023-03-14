@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>569</width>
+    <width>474</width>
     <height>825</height>
    </rect>
   </property>
@@ -187,7 +187,7 @@
       <item>
        <widget class="QStackedWidget" name="stackedWidget">
         <property name="currentIndex">
-         <number>3</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="PageSemiCBCT">
          <layout class="QVBoxLayout" name="verticalLayout_11">
@@ -256,7 +256,7 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>580</width>
+                   <width>414</width>
                    <height>198</height>
                   </rect>
                  </property>
@@ -311,7 +311,7 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>509</width>
+                   <width>98</width>
                    <height>198</height>
                   </rect>
                  </property>
@@ -390,7 +390,7 @@
           <item>
            <widget class="QPushButton" name="ButtonOutput">
             <property name="text">
-             <string>Choose</string>
+             <string>Select</string>
             </property>
            </widget>
           </item>

@@ -16,17 +16,17 @@
     <description><![CDATA[Input/output parameters]]></description>
     
     <string>
-      <name>input</name>
-      <label>input</label>
+      <name>t1_folder</name>
+      <label>t1_folder</label>
       <index>0</index>
-      <description>Path for the input.</description>
+      <description>Path for the input folder with t1 scans and segmentation</description>
     </string>
 
     <string>
-      <name>output_folder</name>
-      <label>output_folder</label>
+      <name>t2_folder</name>
+      <label>t2_folder</label>
       <index>1</index>
-      <description>Output Path</description>
+      <description>Path for the input folder with t2 scans and segmentation</description>
     </string>
 
     <string>
@@ -37,16 +37,16 @@
     </string>
 
     <string>
-      <name>SmallFOV</name>
-      <label>SmallFOV</label>
-      <index>4</index>
-      <description>Boolean to say whether or not the input file is a Small FOV</description>
-    </string>    
+      <name>output_folder</name>
+      <label>output_folder</label>
+      <index>3</index>
+      <description>Output Path</description>
+    </string>
 
     <string>
       <name>temp_folder</name>
       <label>temp_folder</label>
-      <index>5</index>
+      <index>4</index>
       <description>Temp folder for pre aso resample for lightning models</description>
     </string>    
 

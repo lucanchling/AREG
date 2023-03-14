@@ -3,8 +3,8 @@ import os
 import vtk
 import numpy as np
 from vtk.util.numpy_support import vtk_to_numpy
-from utils.utils import LoadJsonLandmarks, ReadSurf
-from utils.transformation import TranslationDict, RotationMatrix, ApplyTransform, TransformDict
+from AREG_IOS_utils.utils import LoadJsonLandmarks, ReadSurf
+from AREG_IOS_utils.transformation import TranslationDict, RotationMatrix, ApplyTransform, TransformDict
 from random import choice
 
 

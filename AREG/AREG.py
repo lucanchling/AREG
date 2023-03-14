@@ -355,8 +355,12 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                                                                                                             
         """
 
-        self.ui.ButtonSearchScan1.clicked.connect(lambda: self.SearchScan(self.ui.lineEditScanT1LmPath))
-        self.ui.ButtonSearchScan2.clicked.connect(lambda: self.SearchScan(self.ui.lineEditScanT2LmPath))
+        self.ui.ButtonSearchScan1.clicked.connect(
+            lambda: self.SearchScan(self.ui.lineEditScanT1LmPath)
+        )
+        self.ui.ButtonSearchScan2.clicked.connect(
+            lambda: self.SearchScan(self.ui.lineEditScanT2LmPath)
+        )
         self.ui.ButtonSearchModel1.connect("clicked(bool)", self.SearchModelSegOr)
         self.ui.ButtonSearchModel2.connect("clicked(bool)", self.SearchModelALI)
         self.ui.ButtonOriented.connect("clicked(bool)", self.onPredictButton)
@@ -466,8 +470,14 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         if self.type == "CBCT":
             self.ui.advancedCollapsibleButton.setMaximumHeight(180)
+            self.ui.label_6.setVisible(False)
+            self.ui.lineEditModel2.setVisible(False)
+            self.ui.ButtonSearchModel2.setVisible(False)
         else:
             self.ui.advancedCollapsibleButton.setMaximumHeight(10000)
+            self.ui.label_6.setVisible(True)
+            self.ui.lineEditModel2.setVisible(True)
+            self.ui.ButtonSearchModel2.setVisible(True)
 
         # best = ['Ba','N','RPo']
         # for checkbox in self.logic.iterillimeted(self.dicchckbox):
@@ -628,9 +638,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         )
 
         if not model_folder == "":
-            error = self.ActualMeth.TestModel(
-                model_folder, self.ui.lineEditModel1.name
-            )
+            error = self.ActualMeth.TestModel(model_folder, self.ui.lineEditModel1.name)
 
             if isinstance(error, str):
                 qt.QMessageBox.warning(self.parent, "Warning", error)
@@ -671,9 +679,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         model_folder = os.path.join(self.SlicerDownloadPath, "Models", name)
 
         if not model_folder == "":
-            error = self.ActualMeth.TestModel(
-                model_folder, self.ui.lineEditModel2.name
-            )
+            error = self.ActualMeth.TestModel(model_folder, self.ui.lineEditModel2.name)
 
             if isinstance(error, str):
                 qt.QMessageBox.warning(self.parent, "Warning", error)
@@ -750,12 +756,12 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     """
 
     def onPredictButton(self):
-        error = self.ActualMeth.TestProcess(
-            input_folder=self.ui.lineEditScanT1LmPath.text,
-            gold_folder=self.ui.lineEditScanT2LmPath.text,
+        error = self.ActualMeth.TestProcess(                
+            input_t1_folder=self.ui.lineEditScanT1LmPath.text,
+            input_t2_folder=self.ui.lineEditScanT2LmPath.text,
             folder_output=self.ui.lineEditOutputPath.text,
-            model_folder_ali=self.ui.lineEditModel2.text,
-            model_folder_segor=self.ui.lineEditModel1.text,
+            model_folder_1=self.ui.lineEditModel1.text,
+            model_folder_2=self.ui.lineEditModel2.text,
             add_in_namefile=self.ui.lineEditAddName.text,
             dic_checkbox=self.dicchckbox,
         )
@@ -766,11 +772,11 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         else:
             self.list_Processes_Parameters, self.display = self.ActualMeth.Process(
-                input_folder=self.ui.lineEditScanT1LmPath.text,
-                gold_folder=self.ui.lineEditScanT2LmPath.text,
+                input_t1_folder=self.ui.lineEditScanT1LmPath.text,
+                input_t2_folder=self.ui.lineEditScanT2LmPath.text,
                 folder_output=self.ui.lineEditOutputPath.text,
-                model_folder_ali=self.ui.lineEditModel2.text,
-                model_folder_segor=self.ui.lineEditModel1.text,
+                model_folder_1=self.ui.lineEditModel1.text,
+                model_folder_2=self.ui.lineEditModel2.text,
                 add_in_namefile=self.ui.lineEditAddName.text,
                 dic_checkbox=self.dicchckbox,
                 logPath=self.log_path,
@@ -985,7 +991,6 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         methode.setcheckbox2(dicchebox2)
 
         return dicchebox, dicchebox2
-
 
     def CreateMiniTab(self, tabWidget: QTabWidget, name: str, index: int):
         new_widget = QWidget()

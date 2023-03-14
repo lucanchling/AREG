@@ -1,9 +1,7 @@
 from AREGMethode.Methode import Methode
 from AREGMethode.Progress import DisplayAREGCBCT, DisplayALICBCT
-import webbrowser
-import os 
+import os
 import slicer
-import json
 import time
 import qt
 
@@ -54,28 +52,29 @@ class CBCT(Methode):
         if self.NumberScan(ref_folder) > 1 :
             out = 'The selected folder must contain only 1 case'
         
-        return out
+        return None
 
     def TestCheckbox(self,dic_checkbox):
         list_landmark = self.CheckboxisChecked(dic_checkbox)
+        
         out = None
-        if len(list_landmark) < 3:
-             out = 'Please select at least 3 landmarks\n'
-        return out    
+        if len(list_landmark)!=1:
+             out = 'Please select a Registration Type\n'
+        return out
 
     def TestModel(self, model_folder: str,lineEditName) -> str:
 
-        if lineEditName == 'lineEditModelSegOr':
-            if len(super().search(model_folder,'ckpt')['ckpt']) == 0:
-                return 'Folder must have Pre ASO models files'
+        if lineEditName == 'lineEditModel1':
+            if len(super().search(model_folder,'pth')['pth']) == 0:
+                return 'Folder must have AMASSS masks models files'
             else:
                 return None
         
-        if lineEditName == 'lineEditModelAli':
-            if len(super().search(model_folder,'pth')['pth']) == 0:
-                return 'Folder must have ALI models files'
-            else:
-                return None
+        # if lineEditName == 'lineEditModelAli':
+        #     if len(super().search(model_folder,'pth')['pth']) == 0:
+        #         return 'Folder must have ALI models files'
+        #     else:
+        #         return None
 
     def TestProcess(self, **kwargs) -> str:
         out=''
@@ -88,14 +87,14 @@ class CBCT(Methode):
         if kwargs['input_folder'] == '':
             out+= 'Please select an input folder\n'
 
-        if kwargs['gold_folder'] == '':
-            out+= 'Please select a reference folder\n'
-
         if kwargs['folder_output'] == '':
             out+= 'Please select an output folder\n'
 
         if kwargs['add_in_namefile']== '':
             out += 'Please select an extension for output files\n'
+
+        if kwargs['model_folder_1'] == '':
+            out += 'Please select a folder for AMASSS models\n'
 
         if out == '':
             out = None
@@ -103,7 +102,7 @@ class CBCT(Methode):
         return out
 
     def getSegOrModelList(self):
-        return ("PreASOModels", "https://github.com/lucanchling/ASO_CBCT/releases/download/v01_preASOmodels/PreASOModels.zip")
+        return ("AMASSS", "https://github.com/lucanchling/AMASSS_CBCT/releases/download/v1.0.2/Masks_Models.zip")
 
     def getALIModelList(self):
         return ("ALIModels", "https://github.com/lucanchling/ALI_CBCT/releases/download/models_v01/")
@@ -120,7 +119,6 @@ class CBCT(Methode):
 
 
     def CheckboxisChecked(self,diccheckbox : dict, in_str = False):
-        out=''
         listchecked = []
         if not len(diccheckbox) == 0:
             for checkboxs in diccheckbox.values():
@@ -199,22 +197,20 @@ class Semi_CBCT(CBCT):
         return out
 
     def Process(self, **kwargs):
-        list_lmrk_str = self.CheckboxisChecked(kwargs['dic_checkbox'],in_str=True)
-       
-        parameter_semi_aso= {'input':kwargs['input_folder'],
-                    'gold_folder':kwargs['gold_folder'],
+        
+        parameter_areg_cbct = {'t1_folder':kwargs['input_t1_folder'],
+                    't2_folder':kwargs['input_t2_folder'],
                     'output_folder':kwargs['folder_output'],
                     'add_inname':kwargs['add_in_namefile'],
-                    'list_landmark':list_lmrk_str,
-                    'model_folder':kwargs['model_folder_ali'],
-                }
-        print('parameter',parameter_semi_aso)
+                    }
+        
+        print('parameter',parameter_areg_cbct)
 
-        OrientProcess = slicer.modules.semi_aso_cbct
-        list_process = [{'Process':OrientProcess,'Parameter':parameter_semi_aso}]
+        OrientProcess = slicer.modules.areg_cbct
+        list_process = [{'Process':OrientProcess,'Parameter':parameter_areg_cbct}]
 
         nb_scan = self.NumberScan(kwargs['input_folder'])
-        display =  {'SEMI_ASO_CBCT':DisplayAREGCBCT(nb_scan)}
+        display =  {'AREG_CBCT':DisplayAREGCBCT(nb_scan)}
         
         return list_process, display
 
@@ -261,7 +257,7 @@ class Auto_CBCT(CBCT):
         parameter_pre_aso = {'input': kwargs['input_folder'],
                              'output_folder': temp_folder,#kwargs['input_folder'],
                              'model_folder':kwargs['model_folder_segor'],
-                             'SmallFOV':kwargs['smallFOV'],
+                             'SmallFOV':False,
                              'temp_folder': tempPREASO_folder}
         
         PreOrientProcess = slicer.modules.pre_aso_cbct

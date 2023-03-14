@@ -1,8 +1,8 @@
 import numpy as np
 import vtk
 from vtk.util.numpy_support import vtk_to_numpy
-from utils.icp import vtkMeanTeeth
-from utils.transformation import RotationMatrix, TransformSurf
+from AREG_IOS_utils.icp import vtkMeanTeeth
+from AREG_IOS_utils.transformation import RotationMatrix, TransformSurf
 
 
 
