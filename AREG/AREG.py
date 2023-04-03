@@ -321,16 +321,18 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             self.ui.LayoutLandmarkSemiIOS,
         )
 
-        self.initRadioButton(
+        self.initCheckBoxCBCT(
             self.MethodeDic["Semi_CBCT"],
             self.ui.LayoutLandmarkSemiCBCT,
             self.ui.tohideCBCT,
         )  # a decommmente
-        self.initRadioButton(
+
+        self.initCheckBoxCBCT(
             self.MethodeDic["Auto_CBCT"],
-            self.ui.LayoutLandmarkAutoCBCT,
-            self.ui.tohideCBCT,
+            self.ui.LayoutAutoCBCT,
+            self.ui.tohideCBCT_2,
         )
+
         self.HideComputeItems()
         # self.initTest(self.MethodeDic['Semi_IOS'])
 
@@ -366,11 +368,11 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.ui.ButtonOriented.connect("clicked(bool)", self.onPredictButton)
         self.ui.ButtonOutput.connect("clicked(bool)", self.ChosePathOutput)
         self.ui.ButtonCancel.connect("clicked(bool)", self.onCancel)
-        self.ui.ButtonSugestLmIOS.clicked.connect(self.SelectSugestLandmark)
-        self.ui.ButtonSugestLmIOSSemi.clicked.connect(self.SelectSugestLandmark)
+        # self.ui.ButtonSugestLmIOS.clicked.connect(self.SelectSugestLandmark)
+        # self.ui.ButtonSugestLmIOSSemi.clicked.connect(self.SelectSugestLandmark)
         self.ui.CbInputType.currentIndexChanged.connect(self.SwitchType)
         self.ui.CbModeType.currentIndexChanged.connect(self.SwitchType)
-        # self.ui.ButtonTestFiles.clicked.connect(lambda: self.SearchScan(True))
+        self.ui.ButtonTestFiles.clicked.connect(self.TestFiles)
 
     """
 
@@ -469,7 +471,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.HideComputeItems()
 
         if self.type == "CBCT":
-            self.ui.advancedCollapsibleButton.setMaximumHeight(180)
+            # self.ui.advancedCollapsibleButton.setMaximumHeight(185)
             self.ui.label_6.setVisible(False)
             self.ui.lineEditModel2.setVisible(False)
             self.ui.ButtonSearchModel2.setVisible(False)
@@ -547,23 +549,54 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         return out_path
 
-    def SearchScan(self, lineEdit, test=False):
-        if not test:
-            scan_folder = qt.QFileDialog.getExistingDirectory(
+    def TestFiles(self):
+        """Function to download the test files"""
+        name, url = self.ActualMeth.getTestFileList()
+
+        scan_folder = self.DownloadUnzip(
+            url=url,
+            directory=os.path.join(self.SlicerDownloadPath),
+            folder_name=os.path.join("Test_Files", name),
+        )
+        scan_folder_t1 = os.path.join(scan_folder, "T1")
+        scan_folder_t2 = os.path.join(scan_folder, "T2")
+        
+        nb_scans = self.ActualMeth.NumberScan(scan_folder)
+        error = self.ActualMeth.TestScan(scan_folder)
+
+        if isinstance(error, str):
+            qt.QMessageBox.warning(self.parent, "Warning", error)
+        else:
+            self.nb_patient = nb_scans
+            self.ui.lineEditScanT1LmPath.setText(scan_folder_t1)
+            self.ui.lineEditScanT2LmPath.setText(scan_folder_t2)
+            self.ui.LabelInfoPreProc.setText(
+                "Number of scans to process : " + str(nb_scans)
+            )
+            self.ui.LabelProgressPatient.setText(
+                "Patient process : 0 /" + str(nb_scans)
+            )
+            self.enableCheckbox()
+
+        
+        self.SearchModelSegOr()
+
+
+    def SearchScan(self, lineEdit):
+        scan_folder = qt.QFileDialog.getExistingDirectory(
                 self.parent, "Select a scan folder for Input"
             )
-        else:
-            name, url = self.ActualMeth.getTestFileList()
+        
+        name, url = self.ActualMeth.getTestFileList()
 
-            scan_folder = self.DownloadUnzip(
-                url=url,
-                directory=os.path.join(self.SlicerDownloadPath),
-                folder_name=os.path.join("Test_Files", name),
-            )
-            self.SearchReference(test=True)
-            self.SearchModelSegOr()
-            if self.type == "CBCT":
-                self.SearchModelALI(test=True)
+        scan_folder = self.DownloadUnzip(
+            url=url,
+            directory=os.path.join(self.SlicerDownloadPath),
+            folder_name=os.path.join("Test_Files", name),
+        )
+        scan_folder_t1 = os.path.join(scan_folder, "T1")
+        scan_folder_t2 = os.path.join(scan_folder, "T2")
+        self.SearchModelSegOr()
 
         if not scan_folder == "":
             nb_scans = self.ActualMeth.NumberScan(scan_folder)
@@ -629,13 +662,26 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 )
 
     def SearchModelSegOr(self):
-        name, url = self.ActualMeth.getSegOrModelList()
+        name, urls = self.ActualMeth.getSegOrModelList()
 
-        model_folder = self.DownloadUnzip(
-            url=url,
-            directory=os.path.join(self.SlicerDownloadPath),
-            folder_name=os.path.join("Models", name),
-        )
+        if type(urls) is str:
+            model_folder = self.DownloadUnzip(
+                url=urls,
+                directory=os.path.join(self.SlicerDownloadPath),
+                folder_name=os.path.join("Models", name),
+            )
+        
+        else:
+            for i,(name_bis,url) in enumerate(urls.items()):
+                _ = self.DownloadUnzip(
+                    url=url,
+                    directory=os.path.join(self.SlicerDownloadPath),
+                    folder_name=os.path.join("Models", name, name_bis),
+                    num_downl=i+1,
+                    total_downloads=len(urls)
+                )
+            
+            model_folder = os.path.join(self.SlicerDownloadPath, "Models", name)
 
         if not model_folder == "":
             error = self.ActualMeth.TestModel(model_folder, self.ui.lineEditModel1.name)
@@ -928,25 +974,25 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                                                                                                                         
     """
 
-    def initRadioButton(self, methode, layout, tohide: qt.QLabel):
+    def initCheckBoxCBCT(self, methode, layout, tohide: qt.QLabel):
         # self.ui.advancedCollapsibleButton.setMaximumHeight(180)
         if not tohide is None:
             tohide.setHidden(True)
         dic = methode.DicLandmark()
         # status = methode.existsLandmark('','')
         dicchebox = {}
-        for _, liste in dic.items():
+        for i,(title,liste) in enumerate(dic.items()):
             Tab = QTabWidget()
             layout.addWidget(Tab)
             listcheckboxlandmark = []
-            tab = self.CreateMiniTab(Tab, "Mask Selection", 0)
+            tab = self.CreateMiniTab(Tab, title, 0)
             for landmark in liste:
-                checkbox = qt.QRadioButton()
+                checkbox = qt.QCheckBox()
                 checkbox.setText(landmark)
                 tab.addWidget(checkbox)
                 listcheckboxlandmark.append(checkbox)
-
-            dicchebox[type] = listcheckboxlandmark
+            
+            dicchebox[title] = listcheckboxlandmark
 
         methode.setcheckbox(dicchebox)
 

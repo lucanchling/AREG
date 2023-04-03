@@ -102,13 +102,14 @@ class CBCT(Methode):
         return out
 
     def getSegOrModelList(self):
-        return ("AMASSS", "https://github.com/lucanchling/AMASSS_CBCT/releases/download/v1.0.2/Masks_Models.zip")
+        return ("AMASSS", {"Full Face Models":"https://github.com/lucanchling/AMASSS_CBCT/releases/download/v1.0.2/AMASSS_Models.zip","Mask Models":"https://github.com/lucanchling/AMASSS_CBCT/releases/download/v1.0.2/Masks_Models.zip"})
 
     def getALIModelList(self):
         return ("ALIModels", "https://github.com/lucanchling/ALI_CBCT/releases/download/models_v01/")
 
     def DicLandmark(self):
-        return {'Landmark':["Cranial Base","Mandible","Maxilla"]}
+        return {'Registration Type':["Cranial Base","Mandible","Maxilla"],
+                'AMASSS Segmentation':['Cranial Base','Mandible','Maxilla']}
 
 
         
@@ -141,7 +142,7 @@ class Semi_CBCT(CBCT):
     
 
     def getTestFileList(self):
-        return ("Semi-Automated", "https://github.com/lucanchling/ASO_CBCT/releases/download/TestFiles/Occlusal_Midsagittal_Test.zip")
+        return ("Semi-Automated", "https://github.com/lucanchling/Areg_CBCT/releases/download/TestFiles/TEST_Semi_AREG.zip")
 
     def TestScan(self, scan_folder: str):
         out = ''
@@ -217,7 +218,7 @@ class Semi_CBCT(CBCT):
 class Auto_CBCT(CBCT):
 
     def getTestFileList(self):
-        return ("Fully-Automated", "https://github.com/lucanchling/ASO_CBCT/releases/download/TestFiles/Test_Scan.zip")
+        return ("Fully-Automated", "https://github.com/lucanchling/Areg_CBCT/releases/download/TestFiles/Test_Full_AREG.zip")
         
     def TestScan(self, scan_folder: str) -> str:
         return None

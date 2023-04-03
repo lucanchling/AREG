@@ -187,7 +187,7 @@
       <item>
        <widget class="QStackedWidget" name="stackedWidget">
         <property name="currentIndex">
-         <number>2</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="PageSemiCBCT">
          <layout class="QVBoxLayout" name="verticalLayout_11">
@@ -204,13 +204,6 @@
               </item>
              </layout>
             </item>
-            <item>
-             <widget class="QPushButton" name="ButtonSugestLmCBCT">
-              <property name="text">
-               <string>Suggested Landmarks</string>
-              </property>
-             </widget>
-            </item>
            </layout>
           </item>
          </layout>
@@ -220,17 +213,11 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
-             <layout class="QHBoxLayout" name="LayoutLandmarkAutoCBCT">
+             <layout class="QVBoxLayout" name="LayoutAutoCBCT">
               <item>
-               <widget class="QLabel" name="tohideCBCT">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
+               <widget class="QLabel" name="tohideCBCT_2">
                 <property name="text">
-                 <string/>
+                 <string>TextLabel</string>
                 </property>
                </widget>
               </item>
@@ -278,13 +265,6 @@
               </item>
              </layout>
             </item>
-            <item>
-             <widget class="QPushButton" name="ButtonSugestLmIOSSemi">
-              <property name="text">
-               <string>Suggest Landmark</string>
-              </property>
-             </widget>
-            </item>
            </layout>
           </item>
          </layout>
@@ -311,7 +291,7 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>98</width>
+                   <width>414</width>
                    <height>198</height>
                   </rect>
                  </property>
@@ -332,13 +312,6 @@
                </widget>
               </item>
              </layout>
-            </item>
-            <item>
-             <widget class="QPushButton" name="ButtonSugestLmIOS">
-              <property name="text">
-               <string>Sugested Teeth</string>
-              </property>
-             </widget>
             </item>
            </layout>
           </item>
