@@ -1,5 +1,5 @@
-from AREGMethode.Methode import Methode
-from AREGMethode.Progress import DisplayAREGIOSCBCT, DisplayALICBCT
+from AREG_Methode.Methode import Methode
+from AREG_Methode.Progress import DisplayAREGIOSCBCT, DisplayALICBCT
 import webbrowser
 import os 
 import slicer

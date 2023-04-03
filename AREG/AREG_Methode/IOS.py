@@ -1,5 +1,5 @@
-from AREGMethode.Methode import Methode
-from AREGMethode.Progress import DisplayALIIOS,DisplayAREGIOS,DisplayCrownSeg
+from AREG_Methode.Methode import Methode
+from AREG_Methode.Progress import DisplayALIIOS,DisplayAREGIOS,DisplayCrownSeg
 import slicer
 import webbrowser
 import glob

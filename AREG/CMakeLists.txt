@@ -4,11 +4,11 @@ set(MODULE_NAME AREG)
 #-----------------------------------------------------------------------------
 set(MODULE_PYTHON_SCRIPTS
   ${MODULE_NAME}.py
-  AREGMethode/Methode.py
-  AREGMethode/IOS.py
-  AREGMethode/CBCT.py
-  AREGMethode/IOSCBCT.py
-  AREGMethode/Progress.py
+  AREG_Methode/Methode.py
+  AREG_Methode/IOS.py
+  AREG_Methode/CBCT.py
+  AREG_Methode/IOSCBCT.py
+  AREG_Methode/Progress.py
   )
 
 set(MODULE_PYTHON_RESOURCES

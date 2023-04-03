@@ -19,10 +19,10 @@ from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
 from functools import partial
 
-from AREGMethode.IOS import Auto_IOS, Semi_IOS
-from AREGMethode.CBCT import Semi_CBCT, Auto_CBCT
-from AREGMethode.Methode import Methode
-from AREGMethode.Progress import Display
+from AREG_Methode.IOS import Auto_IOS, Semi_IOS
+from AREG_Methode.CBCT import Semi_CBCT, Auto_CBCT
+from AREG_Methode.Methode import Methode
+from AREG_Methode.Progress import Display
 
 
 class AREG(ScriptedLoadableModule):

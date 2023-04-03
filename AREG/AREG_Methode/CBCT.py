@@ -1,5 +1,5 @@
-from AREGMethode.Methode import Methode
-from AREGMethode.Progress import DisplayAREGCBCT, DisplayALICBCT
+from AREG_Methode.Methode import Methode
+from AREG_Methode.Progress import DisplayAREGCBCT, DisplayALICBCT
 import os
 import slicer
 import time
