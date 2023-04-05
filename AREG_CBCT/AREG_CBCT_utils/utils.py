@@ -12,7 +12,6 @@ import SimpleITK as sitk
 import numpy as np
 import time,shutil
 from glob import iglob
-from matplotlib import pyplot as plt
 import os, json
 
 """
@@ -321,24 +320,6 @@ def CorrectHisto(input_img,min_porcent=0.01,max_porcent = 0.99, i_min=-1500, i_m
 
     return image
     
-
-def printHist(fixed_image, moving_image, fixed_masked_image, moving_masked_image):
-    """Print the histograms of the fixed and moving images"""
-    
-    fixed_image_array = sitk.GetArrayFromImage(fixed_image)
-    moving_image_array = sitk.GetArrayFromImage(moving_image)
-    fixed_masked_image_array = sitk.GetArrayFromImage(fixed_masked_image)
-    moving_masked_image_array = sitk.GetArrayFromImage(moving_masked_image)
-    
-    
-    plt.figure()
-    plt.hist(fixed_image_array.flatten(), bins=50, alpha=0.5, label='fixed')
-    plt.hist(moving_image_array.flatten(), bins=50, alpha=0.5, label='moving')
-    plt.hist(fixed_masked_image_array.flatten(), bins=50, alpha=0.5, label='fixed_masked')
-    plt.hist(moving_masked_image_array.flatten(), bins=50, alpha=0.5, label='moving_masked')
-    plt.legend(loc='upper right')
-    plt.show()
-
 def applyMask(image, mask):
     """Apply a mask to an image."""
     # Cast the image to float32
