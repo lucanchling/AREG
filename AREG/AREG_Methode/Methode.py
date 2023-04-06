@@ -11,12 +11,12 @@ class Methode(ABC):
         self.diccheckbox2 = {}
 
     @abstractmethod
-    def NumberScan(self, scan_folder: str):
+    def NumberScan(self, scan_folder_t1: str, scan_folder_t2: str):
         """
             Count the number of patient in folder
         Args:
-            scan_folder (str): folder path with Scan
-
+            scan_folder_t1 (str): folder path with Scan for T1
+            scan_folder_t2 (str): folder path with Scan for T2
 
         Return:
             int : return the number of patient.
@@ -24,7 +24,7 @@ class Methode(ABC):
         pass
 
     @abstractmethod
-    def TestScan(self, scan_folder: str) -> str:
+    def TestScan(self, scan_folder_t1: str, scan_folder_t2) -> str:
         """Verify if the input folder seems good (have everything required to run the mode selected), if something is wrong the function return string with error message
 
         This function is called when the user want to import scan

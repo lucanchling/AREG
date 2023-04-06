@@ -471,12 +471,12 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.HideComputeItems()
 
         if self.type == "CBCT":
-            # self.ui.advancedCollapsibleButton.setMaximumHeight(185)
+            # self.ui.advancedCollapsibleButton.setMaximumHeight(350)
             self.ui.label_6.setVisible(False)
             self.ui.lineEditModel2.setVisible(False)
             self.ui.ButtonSearchModel2.setVisible(False)
         else:
-            self.ui.advancedCollapsibleButton.setMaximumHeight(10000)
+            # self.ui.advancedCollapsibleButton.setMaximumHeight(10000)
             self.ui.label_6.setVisible(True)
             self.ui.lineEditModel2.setVisible(True)
             self.ui.ButtonSearchModel2.setVisible(True)
@@ -519,6 +519,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                     100,
                     self.parent,
                 )
+                progress.setCancelButton(None)
                 progress.setWindowModality(qt.Qt.WindowModal)
                 progress.setWindowTitle(
                     "Downloading {}...".format(folder_name.split("/")[0])
@@ -550,7 +551,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         return out_path
 
     def TestFiles(self):
-        """Function to download the test files"""
+        """Function to download and select all the test files"""
         name, url = self.ActualMeth.getTestFileList()
 
         scan_folder = self.DownloadUnzip(
@@ -561,7 +562,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         scan_folder_t1 = os.path.join(scan_folder, "T1")
         scan_folder_t2 = os.path.join(scan_folder, "T2")
         
-        nb_scans = self.ActualMeth.NumberScan(scan_folder)
+        nb_scans = self.ActualMeth.NumberScan(scan_folder_t1, scan_folder_t2)
         error = self.ActualMeth.TestScan(scan_folder)
 
         if isinstance(error, str):
@@ -581,43 +582,40 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         
         self.SearchModelSegOr()
 
+        if self.ui.lineEditOutputPath.text == "":
+            dir, spl = os.path.split(scan_folder)
+            self.ui.lineEditOutputPath.setText(os.path.join(dir, spl , "Registered"))
+
+    def CheckScan(self):
+        """Function to test both t1 and t2 scan folders"""
+        nb_scans = self.ActualMeth.NumberScan(self.ui.lineEditScanT1LmPath.text, self.ui.lineEditScanT2LmPath.text)
+        error = self.ActualMeth.TestScan(self.ui.lineEditScanT1LmPath.text, self.ui.lineEditScanT2LmPath.text)
+
+        if isinstance(error, str):
+            qt.QMessageBox.warning(self.parent, "Warning", error)
+
+        else:
+            self.nb_patient = nb_scans
+            self.ui.LabelInfoPreProc.setText(
+                "Number of scans to process : " + str(nb_scans)
+            )
+            self.ui.LabelProgressPatient.setText(
+                "Patient process : 0 /" + str(nb_scans)
+            )
+            self.enableCheckbox()
+
+
 
     def SearchScan(self, lineEdit):
         scan_folder = qt.QFileDialog.getExistingDirectory(
                 self.parent, "Select a scan folder for Input"
             )
         
-        name, url = self.ActualMeth.getTestFileList()
-
-        scan_folder = self.DownloadUnzip(
-            url=url,
-            directory=os.path.join(self.SlicerDownloadPath),
-            folder_name=os.path.join("Test_Files", name),
-        )
-        scan_folder_t1 = os.path.join(scan_folder, "T1")
-        scan_folder_t2 = os.path.join(scan_folder, "T2")
-        self.SearchModelSegOr()
-
         if not scan_folder == "":
-            nb_scans = self.ActualMeth.NumberScan(scan_folder)
-            error = self.ActualMeth.TestScan(scan_folder)
-
-            if isinstance(error, str):
-                qt.QMessageBox.warning(self.parent, "Warning", error)
-            else:
-                self.nb_patient = nb_scans
-                lineEdit.setText(scan_folder)
-                self.ui.LabelInfoPreProc.setText(
-                    "Number of scans to process : " + str(nb_scans)
-                )
-                self.ui.LabelProgressPatient.setText(
-                    "Patient process : 0 /" + str(nb_scans)
-                )
-                self.enableCheckbox()
-
-                # if self.ui.lineEditOutputPath.text == "":
-                #     dir, spl = os.path.split(scan_folder)
-                #     self.ui.lineEditOutputPath.setText(os.path.join(dir, spl + "Or"))
+            lineEdit.setText(scan_folder)
+            
+            if self.ui.lineEditScanT1LmPath.text != "" and self.ui.lineEditScanT2LmPath.text != "":
+                self.CheckScan()
 
     def SearchReference(self, test=False):
         referenceList = self.ActualMeth.getReferenceList()

@@ -1,6 +1,11 @@
 from AREG_Methode.Methode import Methode
 from AREG_Methode.Progress import DisplayAREGCBCT, DisplayALICBCT
-import os
+import os,sys
+
+fpath = os.path.join(os.path.dirname(__file__), '..','../AREG_CBCT/AREG_utils/')
+sys.path.append('/home/luciacev/Desktop/Luc_Anchling/Projects/AREG/')
+from AREG_CBCT.AREG_CBCT_utils.utils import GetDictPatients
+
 import slicer
 import time
 import qt
@@ -9,13 +14,8 @@ class CBCT(Methode):
     def __init__(self, widget):
         super().__init__(widget)
 
-    def NumberScan(self, scan_folder: str):
-        scan_extension = [".nrrd", ".nrrd.gz", ".nii", ".nii.gz", ".gipl", ".gipl.gz"]
-        dic = super().search(scan_folder,scan_extension)
-        lenscan=0
-        for key in scan_extension:
-            lenscan+=len(dic[key])
-        return lenscan
+    def NumberScan(self, scan_folder_t1: str,scan_folder_t2: str):
+        return len(GetDictPatients(scan_folder_t1, scan_folder_t2))
         
     def PatientScanLandmark(self, dic, scan_extension, lm_extension):
         patients = {}
@@ -79,7 +79,6 @@ class CBCT(Methode):
     def TestProcess(self, **kwargs) -> str:
         out=''
 
-                
         testcheckbox = self.TestCheckbox(kwargs['dic_checkbox'])
         if testcheckbox is not None:
             out+=testcheckbox
@@ -120,20 +119,28 @@ class CBCT(Methode):
 
 
     def CheckboxisChecked(self,diccheckbox : dict, in_str = False):
-        listchecked = []
-        if not len(diccheckbox) == 0:
-            for checkboxs in diccheckbox.values():
-                for checkbox in checkboxs:
-                    if checkbox.isChecked():
-                        listchecked.append(checkbox.text)
-        if in_str:
-            listchecked_str = ''
-            for i,lm in enumerate(listchecked):
-                if i<len(listchecked)-1:
-                    listchecked_str+= lm+' '
-                else:
-                    listchecked_str+=lm
-            return listchecked_str
+        listchecked = {}
+        for key,checkboxs in diccheckbox.items():
+            for checkbox in checkboxs:
+                if checkbox.isChecked():
+                    if key not in listchecked.keys():
+                        listchecked[key] = [checkbox.text]
+                    else:
+                        listchecked[key] += [checkbox.text]
+
+        # if not len(diccheckbox) == 0:
+        #     for checkboxs in diccheckbox.values():
+        #         for checkbox in checkboxs:
+        #             if checkbox.isChecked():
+        #                 listchecked.append(checkbox.text)
+        # if in_str:
+        #     listchecked_str = ''
+        #     for i,lm in enumerate(listchecked):
+        #         if i<len(listchecked)-1:
+        #             listchecked_str+= lm+' '
+        #         else:
+        #             listchecked_str+=lm
+        #     return listchecked_str
     
         return listchecked
     
