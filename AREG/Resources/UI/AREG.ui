@@ -187,18 +187,25 @@
       <item>
        <widget class="QStackedWidget" name="stackedWidget">
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="PageSemiCBCT">
          <layout class="QVBoxLayout" name="verticalLayout_11">
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
-             <layout class="QHBoxLayout" name="LayoutLandmarkSemiCBCT">
+             <layout class="QVBoxLayout" name="LayoutSemiCBCT">
+              <item>
+               <widget class="QCheckBox" name="checkBox">
+                <property name="text">
+                 <string>Register Landmark</string>
+                </property>
+               </widget>
+              </item>
               <item>
                <widget class="QLabel" name="tohideCBCT">
                 <property name="text">
-                 <string/>
+                 <string>TextLabel</string>
                 </property>
                </widget>
               </item>
@@ -227,7 +234,7 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="PageSemiCBCT">
+        <widget class="QWidget" name="PageSemiIOS">
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_1548">
@@ -243,8 +250,8 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>87</width>
-                   <height>37</height>
+                   <width>430</width>
+                   <height>198</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -291,8 +298,8 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>87</width>
-                   <height>184</height>
+                   <width>430</width>
+                   <height>198</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -385,7 +392,7 @@
         <item>
          <widget class="QLabel" name="LabelInfoPreProc">
           <property name="text">
-           <string>Number of scans to process : 0</string>
+           <string>Number of Patients to process : 0</string>
           </property>
          </widget>
         </item>

@@ -2,7 +2,7 @@
 <executable>
   <category>Automated Dental Tools.Advanced</category>
   <index>1</index>
-  <title>PRE_ASO_CBCT</title>
+  <title>AREG_CBCT</title>
   <description><![CDATA[This is a CLI module that can be bundled in an extension]]></description>
   <version>0.0.1</version>
   <documentation-url>https://github.com/username/project</documentation-url>
@@ -43,12 +43,12 @@
       <description>Output Path</description>
     </string>
 
-    <string>
+    <!-- <string>
       <name>reg_lm</name>
       <label>reg_lm</label>
       <index>4</index>
       <description>To apply registration matrix to landmark</description>
-    </string>
+    </string> -->
 
   </parameters>
 </executable>

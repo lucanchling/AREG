@@ -10,7 +10,7 @@ import slicer
 import time
 import qt
 
-class CBCT(Methode):
+class Semi_CBCT(Methode):
     def __init__(self, widget):
         super().__init__(widget)
 
@@ -55,10 +55,10 @@ class CBCT(Methode):
         return None
 
     def TestCheckbox(self,dic_checkbox):
-        list_landmark = self.CheckboxisChecked(dic_checkbox)
+        list_landmark = self.CheckboxisChecked(dic_checkbox)['Registration Type']
         
         out = None
-        if len(list_landmark)!=1:
+        if len(list_landmark) == 0:
              out = 'Please select a Registration Type\n'
         return out
 
@@ -83,8 +83,11 @@ class CBCT(Methode):
         if testcheckbox is not None:
             out+=testcheckbox
 
-        if kwargs['input_folder'] == '':
-            out+= 'Please select an input folder\n'
+        if kwargs['input_t1_folder'] == '':
+            out+= 'Please select an input folder for T1 scans\n'
+
+        if kwargs['input_t2_folder'] == '':
+            out+= 'Please select an input folder for T2 scans\n'
 
         if kwargs['folder_output'] == '':
             out+= 'Please select an output folder\n'
@@ -110,8 +113,34 @@ class CBCT(Methode):
         return {'Registration Type':["Cranial Base","Mandible","Maxilla"],
                 'AMASSS Segmentation':['Cranial Base','Mandible','Maxilla']}
 
-
+    def ProperPrint(self,notfound_list):
+        dic = {'scanT1':'T1 scan','scanT2':'T2 scan','segT1':'T1 segmentation','segT2':'T2 segmentation'}
+        out = ''
+        if 'scanT1' and 'scanT2' in notfound_list:
+            out += 'T1 and T2 scans\n'
+        elif 'segT1' and 'segT2' in notfound_list:
+            out += 'T1 and T2 segmentations\n'
+        else:
+            for notfound in notfound_list:
+                out += dic[notfound]+' '
+        return out
+    
+    def TestScan(self, scan_folder_t1: str, scan_folder_t2: str, liste_keys = ['scanT1','scanT2','segT1','segT2']):
+        out = ''
+        scan_extension = [".nrrd", ".nrrd.gz", ".nii", ".nii.gz", ".gipl", ".gipl.gz"]
+        if self.NumberScan(scan_folder_t1,scan_folder_t2) == 0 :
+            return 'Please Select folder with scans'
         
+        patients = GetDictPatients(scan_folder_t1,scan_folder_t2)
+        for patient,data in patients.items():
+            not_found = [key for key in liste_keys if key not in data.keys()]
+            if len(not_found) != 0:
+                out += f"Patient {patient} does not have {self.ProperPrint(not_found)}\n"
+
+        if out == '':   # If no errors
+            out = None
+            
+        return out
 
         
     def Sugest(self):
@@ -119,14 +148,11 @@ class CBCT(Methode):
 
 
     def CheckboxisChecked(self,diccheckbox : dict, in_str = False):
-        listchecked = {}
+        listchecked = {key:[] for key in diccheckbox.keys()}
         for key,checkboxs in diccheckbox.items():
             for checkbox in checkboxs:
                 if checkbox.isChecked():
-                    if key not in listchecked.keys():
-                        listchecked[key] = [checkbox.text]
-                    else:
-                        listchecked[key] += [checkbox.text]
+                    listchecked[key] += [checkbox.text]
 
         # if not len(diccheckbox) == 0:
         #     for checkboxs in diccheckbox.values():
@@ -144,176 +170,146 @@ class CBCT(Methode):
     
         return listchecked
     
+    def TranslateModels(self,listeModels,mask=False):
+        dicTranslate = {
+            "Models": {
+                "Cranial Base": "CB",
+                "Mandible": "MAND",
+                "Maxilla": "MAX",
+            },
+            "Masks": {
+                "Cranial Base": "CBMASK",
+                "Mandible": "MANDMASK",
+                "Maxilla": "MAXMASK",
+            }
+        }
+        
+        translate = ""
+        for i,model in enumerate(listeModels):
+            if i<len(listeModels)-1:
+                if mask:
+                    translate += dicTranslate["Masks"][model]+" "
+                else:
+                    translate += dicTranslate["Models"][model]+" "
+            else:
+                if mask:
+                    translate += dicTranslate["Masks"][model]
+                else:
+                    translate += dicTranslate["Models"][model]
 
-class Semi_CBCT(CBCT):
+        return translate
+    
+    def existsLandmark(self, input_dir, reference_dir, model_dir):
+        return None
     
 
     def getTestFileList(self):
         return ("Semi-Automated", "https://github.com/lucanchling/Areg_CBCT/releases/download/TestFiles/TEST_Semi_AREG.zip")
 
-    def TestScan(self, scan_folder: str):
-        out = ''
-        scan_extension = [".nrrd", ".nrrd.gz", ".nii", ".nii.gz", ".gipl", ".gipl.gz"]
-        lm_extension = [".json"]
-
-        if self.NumberScan(scan_folder) == 0 :
-            return 'The selected folder must contain scans'
-        
-        dic = super().search(scan_folder,scan_extension,lm_extension)
-
-        patients = self.PatientScanLandmark(dic,scan_extension,lm_extension)
-
-        for patient,data in patients.items():
-            if "scan" not in data.keys():
-                out += "Missing scan for patient : {}\nat {}\n".format(patient,data["dir"])
-            if len(data['lmrk']) == 0:
-                out += "Missing landmark for patient : {}\nat {}\n".format(patient,data["dir"])
-        
-        if out == '':   # If no errors
-            out = None
-        return out
-
-    def existsLandmark(self, input_dir, reference_dir, model_dir):
-        out = None
-        if input_dir != '' and reference_dir != '':
-            input_lm = []
-            input_json = super().search(input_dir,'json')['json']
-
-            all_lm = [self.ListLandmarksJson(file) for file in input_json]
-            input_lm = all_lm[0]
-            for lm_file in all_lm:
-                for lm in input_lm:
-                    if lm not in lm_file:
-                        input_lm.remove(lm)
-
-            gold_json = super().search(reference_dir,'json')['json']
-            gold_lm = self.ListLandmarksJson(gold_json[0])
-            
-            available_lm = [lm for lm in input_lm if lm in gold_lm]
-            available = {key:True for key in available_lm}
-            
-            dic = self.DicLandmark()['Landmark']
-            list_lm = []
-            for key in dic.keys():
-                list_lm.extend(dic[key])
-
-            not_available_lm = [lm for lm in list_lm if lm not in available_lm]
-            not_available = {key:False for key in not_available_lm} 
-            
-            out = {**available,**not_available}
-
-        return out
 
     def Process(self, **kwargs):
+        list_struct = self.CheckboxisChecked(kwargs['dic_checkbox'])
         
-        parameter_areg_cbct = {'t1_folder':kwargs['input_t1_folder'],
-                    't2_folder':kwargs['input_t2_folder'],
-                    'output_folder':kwargs['folder_output'],
-                    'add_inname':kwargs['add_in_namefile'],
+        full_reg_struct = list_struct['Registration Type']
+        reg_struct = self.TranslateModels(full_reg_struct, False)
+        seg_struct = self.TranslateModels(list_struct['AMASSS Segmentation'], False)
+        
+        AREGProcess = slicer.modules.areg_cbct
+        list_process = []
+        for i,reg in enumerate(reg_struct.split(' ')):
+            parameter_areg_cbct = {
+                        't1_folder':kwargs['input_t1_folder'],
+                        't2_folder':kwargs['input_t2_folder'],
+                        'reg_type':reg,
+                        'output_folder':kwargs['folder_output'],
+                        'add_inname':kwargs['add_in_namefile'],
                     }
+            list_process.append({'Process':AREGProcess,'Parameter':parameter_areg_cbct,'Module':'AREG_CBCT for {}'.format(full_reg_struct[i])})
+            
         
-        print('parameter',parameter_areg_cbct)
+        # print('parameter',parameter_areg_cbct)
 
-        OrientProcess = slicer.modules.areg_cbct
-        list_process = [{'Process':OrientProcess,'Parameter':parameter_areg_cbct}]
+        # OrientProcess = slicer.modules.areg_cbct
+        # list_process = [{'Process':OrientProcess,'Parameter':parameter_areg_cbct}]
 
-        nb_scan = self.NumberScan(kwargs['input_folder'])
+        nb_scan = self.NumberScan(kwargs['input_t1_folder'],kwargs['input_t2_folder'])
         display =  {'AREG_CBCT':DisplayAREGCBCT(nb_scan)}
         
         return list_process, display
 
-class Auto_CBCT(CBCT):
+
+class Auto_CBCT(Semi_CBCT):
 
     def getTestFileList(self):
         return ("Fully-Automated", "https://github.com/lucanchling/Areg_CBCT/releases/download/TestFiles/Test_Full_AREG.zip")
         
-    def TestScan(self, scan_folder: str) -> str:
-        return None
-
-    def existsLandmark(self, input_dir, reference_dir, model_dir):
-        out = None
-
-        if reference_dir != '' and model_dir != '':
-
-            gold_json = super().search(reference_dir,'json')['json']
-            gold_lm = self.ListLandmarksJson(gold_json[0])
-
-            list_model_files = super().search(model_dir,'pth')['pth']
-            list_models = [os.path.basename(i).split('_Net')[0] for i in list_model_files]
-            
-            available_lm = [lm for lm in gold_lm if lm in list_models]
-            available = {key:True for key in available_lm}
-            
-            dic = self.DicLandmark()['Landmark']
-            list_lm = []
-            for key in dic.keys():
-                list_lm.extend(dic[key])
-
-            not_available_lm = [lm for lm in list_lm if lm not in available_lm]
-            not_available = {key:False for key in not_available_lm} 
-            
-            out = {**available,**not_available}
-
-        return out
+    def TestScan(self, scan_folder_t1: str, scan_folder_t2: str):
+        return super().TestScan(scan_folder_t1, scan_folder_t2, liste_keys = ['scanT1','scanT2'])
 
     def Process(self, **kwargs):
 
-        # PRE ASO CBCT
-        temp_folder = slicer.util.tempDirectory()
-        time.sleep(0.01)
-        tempPREASO_folder = slicer.util.tempDirectory()
-        parameter_pre_aso = {'input': kwargs['input_folder'],
-                             'output_folder': temp_folder,#kwargs['input_folder'],
-                             'model_folder':kwargs['model_folder_segor'],
-                             'SmallFOV':False,
-                             'temp_folder': tempPREASO_folder}
+        list_struct = self.CheckboxisChecked(kwargs['dic_checkbox'])
         
-        PreOrientProcess = slicer.modules.pre_aso_cbct
-
-        list_lmrk_str = self.CheckboxisChecked(kwargs['dic_checkbox'],in_str=True)
-        nb_landmark = len(list_lmrk_str.split(' '))
-
-        print('PRE_ASO param:', parameter_pre_aso)
-        print()
-
-        # ALI CBCT
+        reg_struct = self.TranslateModels(list_struct['Registration Type'], True)
+        
+        seg_struct = self.TranslateModels(list_struct['AMASSS Segmentation'], False)
+        
+        # AMASSS Mask Segmentation
         documentsLocation = qt.QStandardPaths.DocumentsLocation
         documents = qt.QStandardPaths.writableLocation(documentsLocation)
-        tempALI_folder = os.path.join(documents, slicer.app.applicationName+"_temp_ALI")
+        tempAMASSS_folder = os.path.join(documents, slicer.app.applicationName+"_temp_AMASSS")
         
-        parameter_ali =  {'input': temp_folder, 
-                    'dir_models': kwargs['model_folder_ali'], 
-                    'landmarks': list_lmrk_str, 
-                    'save_in_folder': False, 
-                    'output_dir': temp_folder,
-                    'temp_fold': tempALI_folder,
-                    'DCMInput':False}
-        ALIProcess = slicer.modules.ali_cbct
-        
-        print('ALI param:',parameter_ali)
+        parameter_amasss_mask_t1 = {"inputVolume": kwargs['input_t1_folder'],
+                                "modelDirectory": kwargs['model_folder_1'],
+                                "highDefinition": False,
+                                "skullStructure": reg_struct,
+                                "merge": "SEPARATE",
+                                "genVtk": False,
+                                "save_in_folder": False,
+                                "output_folder": kwargs['input_t1_folder'],
+                                "precision": 50,
+                                "vtk_smooth": 5,
+                                "prediction_ID": 'Pred',
+                                "gpu_usage": 1,
+                                "cpu_usage": 1,
+                                "temp_fold" : tempAMASSS_folder,
+                                "SegmentInput" : False,
+                                "DCMInput": False,
+        }
+        parameter_amasss_mask_t2 = {"inputVolume": kwargs['input_t2_folder'],
+                                "modelDirectory": kwargs['model_folder_1'],
+                                "highDefinition": False,
+                                "skullStructure": reg_struct,
+                                "merge": "SEPARATE",
+                                "genVtk": False,
+                                "save_in_folder": False,
+                                "output_folder": kwargs['input_t2_folder'],
+                                "precision": 50,
+                                "vtk_smooth": 5,
+                                "prediction_ID": 'Pred',
+                                "gpu_usage": 1,
+                                "cpu_usage": 1,
+                                "temp_fold" : tempAMASSS_folder,
+                                "SegmentInput" : False,
+                                "DCMInput": False,
+        }
+
+        AMASSSProcess = slicer.modules.amasss_cli
+
+        print('AMASSS Mask Parameters:', parameter_amasss_mask_t1)
         print()
-        # SEMI ASO CBCT        
-       
-        parameter_semi_aso = {'input':temp_folder,#kwargs['input_folder'],
-                    'gold_folder':kwargs['gold_folder'],
-                    'output_folder':kwargs['folder_output'],
-                    'add_inname':kwargs['add_in_namefile'],
-                    'list_landmark':list_lmrk_str,
-                }
-        OrientProcess = slicer.modules.semi_aso_cbct
 
-        print("SEMI_ASO param:",parameter_semi_aso)
- 
-        list_process = [{'Process':PreOrientProcess,'Parameter':parameter_pre_aso,'Name':'PRE_ASO_CBCT'},
-                        {'Process':ALIProcess,'Parameter': parameter_ali,'Name':'ALI_CBCT'},
-                        {'Process':OrientProcess,'Parameter':parameter_semi_aso,'Name':'SEMI_ASO_CBCT'}
+        # AREG CBCT
+
+
+        list_process = [{'Process':AMASSSProcess,'Parameter':parameter_amasss_mask_t1, 'Module':'AMASSS_CBCT - Mask Generation for T1'},
+                        {'Process':AMASSSProcess,'Parameter':parameter_amasss_mask_t2, 'Module':'AMASSS_CBCT - Mask Generation for T2'},
         ]
-        nb_scan = self.NumberScan(kwargs['input_folder'])
+        nb_scan = self.NumberScan(kwargs['input_t1_folder'], kwargs['input_t2_folder'])
 
-        display = {'ALI_CBCT':DisplayALICBCT(nb_landmark,nb_scan),
-                   'SEMI_ASO_CBCT':DisplayAREGCBCT(nb_scan),
-                   'PRE_ASO_CBCT':DisplayAREGCBCT(nb_scan)}
-
+        display = {'AMASSS_CBCT':DisplayAREGCBCT(nb_scan),
+                   'AREG_CBCT':DisplayAREGCBCT(nb_scan),
+        }
         return list_process, display
         
         

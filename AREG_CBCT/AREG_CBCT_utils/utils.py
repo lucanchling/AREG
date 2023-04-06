@@ -25,6 +25,12 @@ import os, json
 888        8888888 88888888 8888888888  "Y8888P"
 """
 
+def GetListNamesSegType(segmentationType):
+    dic = {'CB':['cb'],
+           'MAND':['mand','md'],
+           'MAX':['max','mx'],}
+    return dic[segmentationType]
+
 def GetListFiles(folder_path, file_extension):
     """Return a list of files in folder_path finishing by file_extension"""
     file_list = []
@@ -32,7 +38,7 @@ def GetListFiles(folder_path, file_extension):
         file_list += search(folder_path,file_extension)[extension_type]
     return file_list
 
-def GetPatients(folder_path, time_point='T1', segmentationType='CB'):
+def GetPatients(folder_path, time_point='T1', segmentationType=None):
     """Return a dictionary with patient id as key"""
     file_extension = ['.nii.gz','.nii','.nrrd','.nrrd.gz','.gipl','.gipl.gz']
     json_extension = ['.json']
@@ -42,29 +48,53 @@ def GetPatients(folder_path, time_point='T1', segmentationType='CB'):
     
     for file in file_list:
         basename = os.path.basename(file)
-        patient = basename.split('_Or')[0].split('_ScanReg')[0].split('_OR')[0].split('_MAND')[0].split('_MAX')[0].split('_CB')[0].split('.')[0].split('_lm')[0].split('_T2')[0].split('_T1')[0]
+        patient = basename.split('_Scan')[0].split('_scan')[0].split('_Or')[0].split('_OR')[0].split('_MAND')[0].split('_MD')[0].split('_MAX')[0].split('_MX')[0].split('_CB')[0].split('_lm')[0].split('_T2')[0].split('_T1')[0].split('_Cl')[0].split('.')[0]
         
         if patient not in patients:
             patients[patient] = {}
         
         if True in [i in basename for i in file_extension]:
-            if segmentationType+'MASK' in basename:
-                patients[patient]['seg'+time_point] = file
-            
-            if 'MASK' not in basename:
+            # if segmentationType+'MASK' in basename:
+            if True in [i in basename.lower() for i in ['mask','seg','pred']]:
+                if segmentationType is None:
+                    patients[patient]['seg'+time_point] = file
+                else:
+                    if True in [i in basename.lower() for i in GetListNamesSegType(segmentationType)]:
+                        patients[patient]['seg'+time_point] = file
+                
+            else:
                 patients[patient]['scan'+time_point] = file
 
-        else:
+        if True in [i in basename for i in json_extension]:
             if time_point == 'T2':
                 patients[patient]['lm'+time_point] = file
 
     return patients
 
-def GetDictPatients(folder_t1_path, folder_t2_path, segmentationType='CB',todo_str=''):
+def GetMatrixPatients(folder_path):
+    """Return a dictionary with patient id as key and matrix path as data"""
+    file_extension = ['.tfm']
+    file_list = GetListFiles(folder_path, file_extension)
+
+    patients = {}
+    for file in file_list:
+        basename = os.path.basename(file)
+        patient = basename.split("reg_")[1].split("_Cl")[0]
+        if patient not in patients and True in [i in basename for i in file_extension]:
+            patients[patient] = {}
+            patients[patient]['mat'] = file  
+
+    return patients
+
+def GetDictPatients(folder_t1_path, folder_t2_path, segmentationType=None, todo_str='', matrix_folder=None):
     """Return a dictionary with patients for both time points"""
     patients_t1 = GetPatients(folder_t1_path, time_point='T1', segmentationType=segmentationType)
     patients_t2 = GetPatients(folder_t2_path, time_point='T2', segmentationType=segmentationType)
     patients = MergeDicts(patients_t1,patients_t2)
+        
+    if matrix_folder is not None:
+        patient_matrix = GetMatrixPatients(matrix_folder)
+        patients = MergeDicts(patients,patient_matrix)
     patients = ModifiedDictPatients(patients, todo_str)
     return patients
 
@@ -319,7 +349,7 @@ def CorrectHisto(input_img,min_porcent=0.01,max_porcent = 0.99, i_min=-1500, i_m
     image.CopyInformation(input_img)
 
     return image
-    
+
 def applyMask(image, mask):
     """Apply a mask to an image."""
     # Cast the image to float32
@@ -416,7 +446,7 @@ def SimpleElastixReg(fixed_image, moving_image):
 
     return resultImage, transformParameterMap
 
-def VoxelBasedRegistration(fixed_image_path,moving_image_path,fixed_seg_path,moving_seg_path):
+def VoxelBasedRegistration(fixed_image_path,moving_image_path,fixed_seg_path,moving_seg_path,approx=False):
 
     # Copy T1 and T2 images to output directory
     # shutil.copyfile(fixed_image_path, os.path.join(outpath,patient+'_T1.nii.gz'))
@@ -425,6 +455,7 @@ def VoxelBasedRegistration(fixed_image_path,moving_image_path,fixed_seg_path,mov
     # Read images and segmentations
     fixed_image = sitk.ReadImage(fixed_image_path)
     fixed_seg = sitk.ReadImage(fixed_seg_path)
+    fixed_seg.SetOrigin(fixed_image.GetOrigin())
     moving_image = sitk.ReadImage(moving_image_path)
     moving_seg = sitk.ReadImage(moving_seg_path)
 
@@ -432,13 +463,19 @@ def VoxelBasedRegistration(fixed_image_path,moving_image_path,fixed_seg_path,mov
     fixed_image_masked = applyMask(fixed_image, fixed_seg)
     # moving_image_masked = applyMask(moving_image, moving_seg)
 
+    
     # Register images
+    Transforms = []
 
-    # Approximate registration
-    # tic = time.time()
-    resample_approx, TransformParamMap = SimpleElastixApprox(fixed_image, moving_image)
-    Transforms_Approx = MatrixRetrieval(TransformParamMap)
-    # print('Registration time: ', round(time.time() - tic,2),'s')
+    if approx:
+        # Approximate registration
+        # tic = time.time()
+        resample_approx, TransformParamMap = SimpleElastixApprox(fixed_image, moving_image)
+        Transforms_Approx = MatrixRetrieval(TransformParamMap)
+        # print('Registration time: ', round(time.time() - tic,2),'s')
+        Transforms = Transforms_Approx
+    else:
+        resample_approx = moving_image
     
     # Fine tuning
     # tic = time.time()
@@ -446,7 +483,7 @@ def VoxelBasedRegistration(fixed_image_path,moving_image_path,fixed_seg_path,mov
     Transforms_Fine = MatrixRetrieval(TransformParamMap)
 
     # Combine transforms
-    Transforms = Transforms_Approx + Transforms_Fine
+    Transforms += Transforms_Fine
     transform = sitk.Transform()
     for t in Transforms:
         transform.AddTransform(t)

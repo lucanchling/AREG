@@ -9,22 +9,27 @@ import slicer
 fpath = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(fpath)
 
-from AREG_CBCT_utils import (ExtractFilesFromFolder, DenseNet, AngleAndAxisVectors, RotationMatrix, PreASOResample)
+# from AREG_CBCT_utils import 
 
 def main(args):
 
-    input_dir, out_dir = args.input[0], args.output_folder[0]
+    t1_folder, t2_folder, out_dir, reg_type = args.t1_folder[0], args.t2_folder[0], args.output_folder[0], args.reg_type[0]
 
-    for i in range(10):
-        print(f"""<filter-progress>{0}</filter-progress>""")
-        sys.stdout.flush()
-        time.sleep(0.2)
-        print(f"""<filter-progress>{2}</filter-progress>""")
-        sys.stdout.flush()
-        time.sleep(0.2)
-        print(f"""<filter-progress>{0}</filter-progress>""")
-        sys.stdout.flush()
-        time.sleep(0.2)
+    print(reg_type)
+
+
+
+
+    # for i in range(10):
+    #     print(f"""<filter-progress>{0}</filter-progress>""")
+    #     sys.stdout.flush()
+    #     time.sleep(0.2)
+    #     print(f"""<filter-progress>{2}</filter-progress>""")
+    #     sys.stdout.flush()
+    #     time.sleep(0.2)
+    #     print(f"""<filter-progress>{0}</filter-progress>""")
+    #     sys.stdout.flush()
+    #     time.sleep(0.2)
 
 if __name__ == "__main__":
     
@@ -36,7 +41,7 @@ if __name__ == "__main__":
     parser.add_argument('t2_folder',nargs=1)
     parser.add_argument('reg_type',nargs=1)
     parser.add_argument('output_folder',nargs=1)
-    parser.add_argument('reg_lm',nargs=1)
+    # parser.add_argument('reg_lm',nargs=1)
 
     args = parser.parse_args()
     

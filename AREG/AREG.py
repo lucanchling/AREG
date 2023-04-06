@@ -323,7 +323,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         self.initCheckBoxCBCT(
             self.MethodeDic["Semi_CBCT"],
-            self.ui.LayoutLandmarkSemiCBCT,
+            self.ui.LayoutSemiCBCT,
             self.ui.tohideCBCT,
         )  # a decommmente
 
@@ -563,7 +563,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         scan_folder_t2 = os.path.join(scan_folder, "T2")
         
         nb_scans = self.ActualMeth.NumberScan(scan_folder_t1, scan_folder_t2)
-        error = self.ActualMeth.TestScan(scan_folder)
+        error = self.ActualMeth.TestScan(scan_folder_t1, scan_folder_t2)
 
         if isinstance(error, str):
             qt.QMessageBox.warning(self.parent, "Warning", error)
@@ -572,7 +572,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             self.ui.lineEditScanT1LmPath.setText(scan_folder_t1)
             self.ui.lineEditScanT2LmPath.setText(scan_folder_t2)
             self.ui.LabelInfoPreProc.setText(
-                "Number of scans to process : " + str(nb_scans)
+                "Number of Patients to process : " + str(nb_scans)
             )
             self.ui.LabelProgressPatient.setText(
                 "Patient process : 0 /" + str(nb_scans)
@@ -597,7 +597,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         else:
             self.nb_patient = nb_scans
             self.ui.LabelInfoPreProc.setText(
-                "Number of scans to process : " + str(nb_scans)
+                "Number of Patients to process : " + str(nb_scans)
             )
             self.ui.LabelProgressPatient.setText(
                 "Patient process : 0 /" + str(nb_scans)
@@ -835,6 +835,11 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 None,
                 self.list_Processes_Parameters[0]["Parameter"],
             )
+            if "Module" in self.list_Processes_Parameters[0].keys():
+                self.module_name_bis = self.list_Processes_Parameters[0]["Module"]
+            else:
+                self.module_name_bis = None
+
             self.processObserver = self.process.AddObserver(
                 "ModifiedEvent", self.onProcessUpdate
             )
@@ -862,7 +867,10 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         timer = f"Time : {time.time()-self.startTime:.2f}s"
         self.ui.LabelTimer.setText(timer)
         progress = caller.GetProgress()
-        self.module_name = caller.GetModuleTitle()
+        if self.module_name_bis is None:
+            self.module_name = caller.GetModuleTitle()
+        else:
+            self.module_name = self.module_name_bis
         self.ui.LabelNameExtension.setText(self.module_name)
 
         if self.module_name_before != self.module_name:
@@ -882,10 +890,10 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         if progress == 0:
             self.updateProgessBar = False
 
-        if self.display[self.module_name].isProgress(
+        if self.display[self.module_name.split(' ')[0]].isProgress(
             progress=progress, updateProgessBar=self.updateProgessBar
         ):
-            progress_bar, message = self.display[self.module_name]()
+            progress_bar, message = self.display[self.module_name.split(' ')[0]]()
             self.ui.progressBar.setValue(progress_bar)
             self.ui.LabelProgressPatient.setText(message)
             self.nb_change_bystep += 1
