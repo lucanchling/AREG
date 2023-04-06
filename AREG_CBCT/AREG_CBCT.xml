@@ -30,10 +30,10 @@
     </string>
 
     <string>
-      <name>model_folder</name>
-      <label>model_folder</label>
+      <name>reg_type</name>
+      <label>reg_type</label>
       <index>2</index>
-      <description>Folder with model files</description>
+      <description>Registration type [MAND, CB, MAX]</description>
     </string>
 
     <string>
@@ -44,11 +44,11 @@
     </string>
 
     <string>
-      <name>temp_folder</name>
-      <label>temp_folder</label>
+      <name>reg_lm</name>
+      <label>reg_lm</label>
       <index>4</index>
-      <description>Temp folder for pre aso resample for lightning models</description>
-    </string>    
+      <description>To apply registration matrix to landmark</description>
+    </string>
 
   </parameters>
 </executable>

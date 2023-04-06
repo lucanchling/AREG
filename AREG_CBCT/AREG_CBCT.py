@@ -32,11 +32,11 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('input',nargs=1)
+    parser.add_argument('t1_folder',nargs=1)
+    parser.add_argument('t2_folder',nargs=1)
+    parser.add_argument('reg_type',nargs=1)
     parser.add_argument('output_folder',nargs=1)
-    parser.add_argument('model_folder',nargs=1)
-    parser.add_argument('SmallFOV',nargs=1)
-    parser.add_argument('temp_folder',nargs=1)
+    parser.add_argument('reg_lm',nargs=1)
 
     args = parser.parse_args()
     
