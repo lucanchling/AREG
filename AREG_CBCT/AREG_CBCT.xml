@@ -43,6 +43,13 @@
       <description>Output Path</description>
     </string>
 
+    <string>
+      <name>add_name</name>
+      <label>add_name</label>
+      <index>4</index>
+      <description>Extension name for output files</description>
+    </string>
+
     <!-- <string>
       <name>reg_lm</name>
       <label>reg_lm</label>

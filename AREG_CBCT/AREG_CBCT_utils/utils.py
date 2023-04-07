@@ -8,11 +8,19 @@
   888   888   "   888 888        Y88b. .d88P 888  T88b      888     Y88b  d88P 
 8888888 888       888 888         "Y88888P"  888   T88b     888      "Y8888P" 
 """
-import SimpleITK as sitk
 import numpy as np
-import time,shutil
+import time
 from glob import iglob
 import os, json
+from slicer.util import pip_uninstall
+
+from pkg_resources import working_set
+installed_packages_list = [f"{i.key}" for i in working_set]
+if 'simpleitk-simpleelastix' in installed_packages_list:
+    pip_uninstall('SimpleITK-SimpleElastix -q')
+
+
+import SimpleITK as sitk
 
 """
 8888888888 8888888 888      8888888888  .d8888b.  
@@ -407,7 +415,7 @@ def SimpleElastixApprox(fixed_image, moving_image):
     parameterMapVector.append(sitk.GetDefaultParameterMap("rigid"))
     elastixImageFilter.SetParameterMap(parameterMapVector)
 
-    elastixImageFilter.SetParameter("MaximumNumberOfIterations", "5000")
+    # elastixImageFilter.SetParameter("MaximumNumberOfIterations", "5000")
     # elastixImageFilter.SetParameter("NumberOfSpatialSamples", "100000")
     
     tic = time.time()
@@ -434,7 +442,7 @@ def SimpleElastixReg(fixed_image, moving_image):
     elastixImageFilter.SetParameterMap(parameterMapVector)
     
     elastixImageFilter.SetParameter("ErodeMask", "true")
-    elastixImageFilter.SetParameter("MaximumNumberOfIterations", "10000")
+    # elastixImageFilter.SetParameter("MaximumNumberOfIterations", "10000")
     # elastixImageFilter.SetParameter("NumberOfSpatialSamples", "100000")
     
     tic = time.time()

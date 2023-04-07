@@ -13,6 +13,9 @@ import qt
 class Semi_CBCT(Methode):
     def __init__(self, widget):
         super().__init__(widget)
+        documentsLocation = qt.QStandardPaths.DocumentsLocation
+        documents = qt.QStandardPaths.writableLocation(documentsLocation)
+        self.tempAMASSS_folder = os.path.join(documents, slicer.app.applicationName+"_temp_AMASSS")
 
     def NumberScan(self, scan_folder_t1: str,scan_folder_t2: str):
         return len(GetDictPatients(scan_folder_t1, scan_folder_t2))
@@ -109,9 +112,6 @@ class Semi_CBCT(Methode):
     def getALIModelList(self):
         return ("ALIModels", "https://github.com/lucanchling/ALI_CBCT/releases/download/models_v01/")
 
-    def DicLandmark(self):
-        return {'Registration Type':["Cranial Base","Mandible","Maxilla"],
-                'AMASSS Segmentation':['Cranial Base','Mandible','Maxilla']}
 
     def ProperPrint(self,notfound_list):
         dic = {'scanT1':'T1 scan','scanT2':'T2 scan','segT1':'T1 segmentation','segT2':'T2 segmentation'}
@@ -170,12 +170,21 @@ class Semi_CBCT(Methode):
     
         return listchecked
     
+    def DicLandmark(self):
+        return {'Registration Type':["Cranial Base","Mandible","Maxilla"],
+                'AMASSS Segmentation':['Cranial Base','Cervical Vertebra','Mandible','Maxilla','Skin','Upper Airway']}
+
     def TranslateModels(self,listeModels,mask=False):
         dicTranslate = {
             "Models": {
-                "Cranial Base": "CB",
-                "Mandible": "MAND",
-                "Maxilla": "MAX",
+                "Mandible" : "MAND",
+                "Maxilla" : "MAX",
+                "Cranial Base" : "CB",
+                "Cervical Vertebra" : "CV",
+                "Root Canal" : "RC",
+                "Mandibular Canal" : "MCAN",
+                "Upper Airway" : "UAW",
+                "Skin" : "SKIN",
             },
             "Masks": {
                 "Cranial Base": "CBMASK",
@@ -209,10 +218,10 @@ class Semi_CBCT(Methode):
 
     def Process(self, **kwargs):
         list_struct = self.CheckboxisChecked(kwargs['dic_checkbox'])
-        
+
+        # AREG CBCT PROCESS
         full_reg_struct = list_struct['Registration Type']
         reg_struct = self.TranslateModels(full_reg_struct, False)
-        seg_struct = self.TranslateModels(list_struct['AMASSS Segmentation'], False)
         
         AREGProcess = slicer.modules.areg_cbct
         list_process = []
@@ -222,18 +231,37 @@ class Semi_CBCT(Methode):
                         't2_folder':kwargs['input_t2_folder'],
                         'reg_type':reg,
                         'output_folder':kwargs['folder_output'],
-                        'add_inname':kwargs['add_in_namefile'],
+                        'add_name':kwargs['add_in_namefile'],
                     }
             list_process.append({'Process':AREGProcess,'Parameter':parameter_areg_cbct,'Module':'AREG_CBCT for {}'.format(full_reg_struct[i])})
             
-        
-        # print('parameter',parameter_areg_cbct)
+        seg_struct = self.TranslateModels(list_struct['AMASSS Segmentation'], False)
 
-        # OrientProcess = slicer.modules.areg_cbct
-        # list_process = [{'Process':OrientProcess,'Parameter':parameter_areg_cbct}]
+        # AMASSS PROCESS
+        AMASSSProcess = slicer.modules.amasss_cli
+        
+        parameter_amasss_seg = {"inputVolume": kwargs['folder_output'],
+                                "modelDirectory": kwargs['model_folder_1'],
+                                "highDefinition": False,
+                                "skullStructure": seg_struct,
+                                "merge": "MERGE" if kwargs['merge_seg'] else "SEPARATE",
+                                "genVtk": True,
+                                "save_in_folder": False,
+                                "output_folder": kwargs['folder_output'],
+                                "precision": 50,
+                                "vtk_smooth": 5,
+                                "prediction_ID": 'Pred',
+                                "gpu_usage": 1,
+                                "cpu_usage": 1,
+                                "temp_fold" : self.tempAMASSS_folder,
+                                "SegmentInput" : False,
+                                "DCMInput": False,
+        }
+        list_process.append({'Process':AMASSSProcess,'Parameter':parameter_amasss_seg,'Module':'AMASSS_CBCT Segmentation'})
 
         nb_scan = self.NumberScan(kwargs['input_t1_folder'],kwargs['input_t2_folder'])
-        display =  {'AREG_CBCT':DisplayAREGCBCT(nb_scan)}
+        display =  {'AREG_CBCT':DisplayAREGCBCT(nb_scan),
+                    'AMASSS_CBCT':DisplayAREGCBCT(nb_scan)}
         
         return list_process, display
 
@@ -255,9 +283,6 @@ class Auto_CBCT(Semi_CBCT):
         seg_struct = self.TranslateModels(list_struct['AMASSS Segmentation'], False)
         
         # AMASSS Mask Segmentation
-        documentsLocation = qt.QStandardPaths.DocumentsLocation
-        documents = qt.QStandardPaths.writableLocation(documentsLocation)
-        tempAMASSS_folder = os.path.join(documents, slicer.app.applicationName+"_temp_AMASSS")
         
         parameter_amasss_mask_t1 = {"inputVolume": kwargs['input_t1_folder'],
                                 "modelDirectory": kwargs['model_folder_1'],
@@ -272,7 +297,7 @@ class Auto_CBCT(Semi_CBCT):
                                 "prediction_ID": 'Pred',
                                 "gpu_usage": 1,
                                 "cpu_usage": 1,
-                                "temp_fold" : tempAMASSS_folder,
+                                "temp_fold" : self.tempAMASSS_folder,
                                 "SegmentInput" : False,
                                 "DCMInput": False,
         }
@@ -289,7 +314,7 @@ class Auto_CBCT(Semi_CBCT):
                                 "prediction_ID": 'Pred',
                                 "gpu_usage": 1,
                                 "cpu_usage": 1,
-                                "temp_fold" : tempAMASSS_folder,
+                                "temp_fold" : self.tempAMASSS_folder,
                                 "SegmentInput" : False,
                                 "DCMInput": False,
         }

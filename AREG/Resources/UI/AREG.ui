@@ -187,7 +187,7 @@
       <item>
        <widget class="QStackedWidget" name="stackedWidget">
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="PageSemiCBCT">
          <layout class="QVBoxLayout" name="verticalLayout_11">
@@ -195,13 +195,6 @@
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
              <layout class="QVBoxLayout" name="LayoutSemiCBCT">
-              <item>
-               <widget class="QCheckBox" name="checkBox">
-                <property name="text">
-                 <string>Register Landmark</string>
-                </property>
-               </widget>
-              </item>
               <item>
                <widget class="QLabel" name="tohideCBCT">
                 <property name="text">
@@ -250,8 +243,8 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>430</width>
-                   <height>198</height>
+                   <width>87</width>
+                   <height>37</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -298,7 +291,7 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>430</width>
+                   <width>87</width>
                    <height>198</height>
                   </rect>
                  </property>
@@ -349,7 +342,7 @@
           <item>
            <widget class="QLineEdit" name="lineEditAddName">
             <property name="text">
-             <string>Registered</string>
+             <string>Reg</string>
             </property>
            </widget>
           </item>

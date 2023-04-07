@@ -394,19 +394,19 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         """Function to change the UI depending on the mode selected (Semi or Fully Automated)"""
         if index == 1:  # Semi-Automated
             self.ui.label_6.setVisible(False)
-            self.ui.label_7.setVisible(False)
+            # self.ui.label_7.setVisible(False)
             self.ui.lineEditModel2.setVisible(False)
             self.ui.lineEditModel2.setText(" ")
-            self.ui.lineEditModel1.setVisible(False)
-            self.ui.lineEditModel1.setText(" ")
+            # self.ui.lineEditModel1.setVisible(False)
+            # self.ui.lineEditModel1.setText(" ")
             self.ui.ButtonSearchModel2.setVisible(False)
-            self.ui.ButtonSearchModel1.setVisible(False)
+            # self.ui.ButtonSearchModel1.setVisible(False)
 
         if index == 0:  # Fully Automated
             # self.ui.label_6.setVisible(True)
-            self.ui.label_7.setVisible(True)
-            self.ui.lineEditModel1.setVisible(True)
-            self.ui.ButtonSearchModel1.setVisible(True)
+            # self.ui.label_7.setVisible(True)
+            # self.ui.lineEditModel1.setVisible(True)
+            # self.ui.ButtonSearchModel1.setVisible(True)
             if isinstance(self.ActualMeth, (Auto_IOS, Semi_IOS)):
                 self.ui.lineEditModel2.setVisible(False)
                 self.ui.ButtonSearchModel2.setVisible(False)
@@ -824,6 +824,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 add_in_namefile=self.ui.lineEditAddName.text,
                 dic_checkbox=self.dicchckbox,
                 logPath=self.log_path,
+                merge_seg=self.ActualMeth.merge_seg_checkbox.isChecked() if self.ActualMeth.merge_seg_checkbox is not None else False,
             )
 
             self.nb_extension_launch = len(self.list_Processes_Parameters)
@@ -986,12 +987,19 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             tohide.setHidden(True)
         dic = methode.DicLandmark()
         # status = methode.existsLandmark('','')
+        # Create a checkbox 
+        self.ldmk_reg_checkbox = qt.QCheckBox()
+        self.ldmk_reg_checkbox.setText("Register Landmark")
+        self.ldmk_reg_checkbox.setEnabled(False)
+        layout.addWidget(self.ldmk_reg_checkbox)
+
+        
         dicchebox = {}
         for i,(title,liste) in enumerate(dic.items()):
             Tab = QTabWidget()
             layout.addWidget(Tab)
             listcheckboxlandmark = []
-            tab = self.CreateMiniTab(Tab, title, 0)
+            tab = self.CreateMiniTab(Tab, title, 0, len(liste))
             for landmark in liste:
                 checkbox = qt.QCheckBox()
                 checkbox.setText(landmark)
@@ -1002,7 +1010,11 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         methode.setcheckbox(dicchebox)
 
-        return dicchebox, dicchebox
+        methode.merge_seg_checkbox = qt.QCheckBox()
+        methode.merge_seg_checkbox.setText("Merge Segmentations")
+        layout.addWidget(methode.merge_seg_checkbox)
+
+        # return dicchebox, dicchebox
 
     def initCheckbox(self, methode, layout, tohide: qt.QLabel):
         # self.ui.advancedCollapsibleButton.setMaximumHeight(1000)
@@ -1044,11 +1056,14 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         return dicchebox, dicchebox2
 
-    def CreateMiniTab(self, tabWidget: QTabWidget, name: str, index: int):
+    def CreateMiniTab(self, tabWidget: QTabWidget, name: str, index: int, numberItems=None):
         new_widget = QWidget()
         # new_widget.setMinimumHeight(150)
         # new_widget.resize(tabWidget.size)
-        tabWidget.setMaximumHeight(150)
+        # tabWidget.setMaximumHeight(10)
+        if numberItems is not None:
+            tabWidget.setMinimumHeight(40*numberItems)
+            
         layout = QGridLayout(new_widget)
 
         scr_box = QScrollArea(new_widget)
