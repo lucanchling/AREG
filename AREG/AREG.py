@@ -1011,8 +1011,8 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             for struct in liste:
                 checkbox = qt.QCheckBox()
                 checkbox.setText(struct)
-                if struct in ['Cranial Base','Mandible','Maxilla']:
-                    checkbox.setChecked(True)
+                # if struct in ['Cranial Base','Mandible','Maxilla']:
+                #     checkbox.setChecked(True)
                 tab.addWidget(checkbox)
                 listcheckboxlandmark.append(checkbox)
             

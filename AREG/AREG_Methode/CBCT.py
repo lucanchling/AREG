@@ -2,8 +2,8 @@ from AREG_Methode.Methode import Methode
 from AREG_Methode.Progress import DisplayAREGCBCT, DisplayAMASSS
 import os,sys
 
-fpath = os.path.join(os.path.dirname(__file__), '..','../AREG_CBCT/AREG_utils/')
-sys.path.append('/home/luciacev/Desktop/Luc_Anchling/Projects/AREG/')
+fpath = os.path.join(os.path.dirname(__file__), '..','..')
+sys.path.append(fpath)
 from AREG_CBCT.AREG_CBCT_utils.utils import GetDictPatients
 
 import slicer
