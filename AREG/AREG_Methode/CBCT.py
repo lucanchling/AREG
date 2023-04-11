@@ -1,5 +1,5 @@
 from AREG_Methode.Methode import Methode
-from AREG_Methode.Progress import DisplayAREGCBCT, DisplayALICBCT
+from AREG_Methode.Progress import DisplayAREGCBCT, DisplayAMASSS
 import os,sys
 
 fpath = os.path.join(os.path.dirname(__file__), '..','../AREG_CBCT/AREG_utils/')
@@ -9,6 +9,7 @@ from AREG_CBCT.AREG_CBCT_utils.utils import GetDictPatients
 import slicer
 import time
 import qt
+import platform
 
 class Semi_CBCT(Methode):
     def __init__(self, widget):
@@ -16,6 +17,12 @@ class Semi_CBCT(Methode):
         documentsLocation = qt.QStandardPaths.DocumentsLocation
         documents = qt.QStandardPaths.writableLocation(documentsLocation)
         self.tempAMASSS_folder = os.path.join(documents, slicer.app.applicationName+"_temp_AMASSS")
+
+    def getGPUUsage(self):
+        if platform.system() == 'Darwin':
+            return 1
+        else:
+            return 5
 
     def NumberScan(self, scan_folder_t1: str,scan_folder_t2: str):
         return len(GetDictPatients(scan_folder_t1, scan_folder_t2))
@@ -144,7 +151,7 @@ class Semi_CBCT(Methode):
 
         
     def Sugest(self):
-        return ['Ba','S','N','RPo','LPo','ROr','LOr']
+        return ['']
 
 
     def CheckboxisChecked(self,diccheckbox : dict, in_str = False):
@@ -234,10 +241,11 @@ class Semi_CBCT(Methode):
                         'add_name':kwargs['add_in_namefile'],
                     }
             list_process.append({'Process':AREGProcess,'Parameter':parameter_areg_cbct,'Module':'AREG_CBCT for {}'.format(full_reg_struct[i])})
-            
-        seg_struct = self.TranslateModels(list_struct['AMASSS Segmentation'], False)
+        
+        full_seg_struct = list_struct['AMASSS Segmentation']
+        seg_struct = self.TranslateModels(full_seg_struct, False)
 
-        # AMASSS PROCESS
+        # AMASSS PROCESS - SEGMENTATION
         AMASSSProcess = slicer.modules.amasss_cli
         
         parameter_amasss_seg = {"inputVolume": kwargs['folder_output'],
@@ -251,17 +259,18 @@ class Semi_CBCT(Methode):
                                 "precision": 50,
                                 "vtk_smooth": 5,
                                 "prediction_ID": 'Pred',
-                                "gpu_usage": 1,
+                                "gpu_usage": self.getGPUUsage(),
                                 "cpu_usage": 1,
                                 "temp_fold" : self.tempAMASSS_folder,
                                 "SegmentInput" : False,
                                 "DCMInput": False,
         }
+        list_process = []
         list_process.append({'Process':AMASSSProcess,'Parameter':parameter_amasss_seg,'Module':'AMASSS_CBCT Segmentation'})
 
         nb_scan = self.NumberScan(kwargs['input_t1_folder'],kwargs['input_t2_folder'])
         display =  {'AREG_CBCT':DisplayAREGCBCT(nb_scan),
-                    'AMASSS_CBCT':DisplayAREGCBCT(nb_scan)}
+                    'AMASSS_CBCT':DisplayAMASSS(nb_scan*len(full_reg_struct),len(full_seg_struct))}
         
         return list_process, display
 
@@ -278,12 +287,11 @@ class Auto_CBCT(Semi_CBCT):
 
         list_struct = self.CheckboxisChecked(kwargs['dic_checkbox'])
         
-        reg_struct = self.TranslateModels(list_struct['Registration Type'], True)
+        full_reg_struct = list_struct['Registration Type']
+        reg_struct = self.TranslateModels(full_reg_struct, True)
         
-        seg_struct = self.TranslateModels(list_struct['AMASSS Segmentation'], False)
         
-        # AMASSS Mask Segmentation
-        
+        # AMASSS PROCESS - MASK SEGMENTATIONS        
         parameter_amasss_mask_t1 = {"inputVolume": kwargs['input_t1_folder'],
                                 "modelDirectory": kwargs['model_folder_1'],
                                 "highDefinition": False,
@@ -295,7 +303,7 @@ class Auto_CBCT(Semi_CBCT):
                                 "precision": 50,
                                 "vtk_smooth": 5,
                                 "prediction_ID": 'Pred',
-                                "gpu_usage": 1,
+                                "gpu_usage": self.getGPUUsage(),
                                 "cpu_usage": 1,
                                 "temp_fold" : self.tempAMASSS_folder,
                                 "SegmentInput" : False,
@@ -312,27 +320,64 @@ class Auto_CBCT(Semi_CBCT):
                                 "precision": 50,
                                 "vtk_smooth": 5,
                                 "prediction_ID": 'Pred',
-                                "gpu_usage": 1,
+                                "gpu_usage": self.getGPUUsage(),
                                 "cpu_usage": 1,
                                 "temp_fold" : self.tempAMASSS_folder,
                                 "SegmentInput" : False,
                                 "DCMInput": False,
         }
-
         AMASSSProcess = slicer.modules.amasss_cli
-
-        print('AMASSS Mask Parameters:', parameter_amasss_mask_t1)
-        print()
-
-        # AREG CBCT
-
-
-        list_process = [{'Process':AMASSSProcess,'Parameter':parameter_amasss_mask_t1, 'Module':'AMASSS_CBCT - Mask Generation for T1'},
-                        {'Process':AMASSSProcess,'Parameter':parameter_amasss_mask_t2, 'Module':'AMASSS_CBCT - Mask Generation for T2'},
+        list_process = [{'Process':AMASSSProcess,'Parameter':parameter_amasss_mask_t1, 'Module':'AMASSS_CBCT_MASK for T1'},
+                        {'Process':AMASSSProcess,'Parameter':parameter_amasss_mask_t2, 'Module':'AMASSS_CBCT_MASK for T2'},
         ]
-        nb_scan = self.NumberScan(kwargs['input_t1_folder'], kwargs['input_t2_folder'])
 
-        display = {'AMASSS_CBCT':DisplayAREGCBCT(nb_scan),
+        # print('AMASSS Mask Parameters:', parameter_amasss_mask_t1)
+        # print()
+
+        # AREG CBCT PROCESS
+        full_reg_struct = list_struct['Registration Type']
+        reg_struct = self.TranslateModels(full_reg_struct, False)
+        
+        AREGProcess = slicer.modules.areg_cbct
+        for i,reg in enumerate(reg_struct.split(' ')):
+            parameter_areg_cbct = {
+                        't1_folder':kwargs['input_t1_folder'],
+                        't2_folder':kwargs['input_t2_folder'],
+                        'reg_type':reg,
+                        'output_folder':kwargs['folder_output'],
+                        'add_name':kwargs['add_in_namefile'],
+                    }
+            list_process.append({'Process':AREGProcess,'Parameter':parameter_areg_cbct,'Module':'AREG_CBCT for {}'.format(full_reg_struct[i])})
+
+        full_seg_struct = list_struct['AMASSS Segmentation']
+        seg_struct = self.TranslateModels(full_seg_struct, False)
+
+        # AMASSS PROCESS - SEGMENTATIONS
+        AMASSSProcess = slicer.modules.amasss_cli
+        
+        parameter_amasss_seg = {"inputVolume": kwargs['folder_output'],
+                                "modelDirectory": kwargs['model_folder_1'],
+                                "highDefinition": False,
+                                "skullStructure": seg_struct,
+                                "merge": "MERGE" if kwargs['merge_seg'] else "SEPARATE",
+                                "genVtk": True,
+                                "save_in_folder": False,
+                                "output_folder": kwargs['folder_output'],
+                                "precision": 50,
+                                "vtk_smooth": 5,
+                                "prediction_ID": 'Pred',
+                                "gpu_usage": self.getGPUUsage(),
+                                "cpu_usage": 1,
+                                "temp_fold" : self.tempAMASSS_folder,
+                                "SegmentInput" : False,
+                                "DCMInput": False,
+        }
+        list_process.append({'Process':AMASSSProcess,'Parameter':parameter_amasss_seg,'Module':'AMASSS_CBCT - Segmentation'})
+
+
+        nb_scan = self.NumberScan(kwargs['input_t1_folder'], kwargs['input_t2_folder'])
+        display = {'AMASSS_CBCT_MASK':DisplayAMASSS(nb_scan, len(full_reg_struct)),
+                   'AMASSS_CBCT':DisplayAMASSS(nb_scan*len(full_reg_struct), len(full_seg_struct)),
                    'AREG_CBCT':DisplayAREGCBCT(nb_scan),
         }
         return list_process, display

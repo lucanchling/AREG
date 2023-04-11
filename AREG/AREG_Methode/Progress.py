@@ -5,7 +5,7 @@ from typing import Tuple
 
 class Display(ABC):
         def __init__(self) -> None:
-            self.progress : int = 0
+            self.progress : float = 0
             self.progress_bar : float = 0
             self.message : str = 0 
 
@@ -62,8 +62,8 @@ class DisplayALIIOS(Display):
     def __call__(self)  -> Tuple[float, str] :
         self.progress+=1
         self.progress_bar = (self.progress/(self.nb_landmark*self.nb_scan_total))*100
-        nb_scan_treat = int(self.progress//self.nb_landmark)
-        self.message = f'Scan : {nb_scan_treat} / {self.nb_scan_total}'
+        nb_scan_done = int(self.progress//self.nb_landmark)
+        self.message = f'Scan : {nb_scan_done} / {self.nb_scan_total}'
         return self.progress_bar, self.message
 
 
@@ -126,20 +126,20 @@ class DisplayAREGCBCT(Display):
             out = True
         return out
 
-class DisplayALICBCT(Display):
-    def __init__(self,nb_landmark,nb_scan) -> None:
-        self.nb_landmark = nb_landmark
+class DisplayAMASSS(Display):
+    def __init__(self,nb_scan, nb_struct) -> None:
         self.nb_scan_total = nb_scan
         self.pred_step = 0
+        self.nb_struct = nb_struct
         super().__init__()
 
     def __call__(self)  -> Tuple[float, str] :
-        self.progress+=.39
-        self.progress_bar = (self.progress/(self.nb_landmark*self.nb_scan_total))*100
-        nb_scan_treat = int(self.progress//self.nb_landmark)
-        self.message = f'Scan : {nb_scan_treat} / {self.nb_scan_total}'
+        self.progress+=.33
+        self.progress_bar = (self.progress/(self.nb_struct*self.nb_scan_total))*100
+        nb_scan_done = int(self.progress//(self.nb_scan_total))
+        print("progress : {} | progress_bar : {} | nb_scan_done : {}/{}".format(self.progress,self.progress_bar,nb_scan_done,self.nb_scan_total))
+        self.message = f'Scan : {nb_scan_done} / {self.nb_scan_total}'
         return self.progress_bar, self.message
-
 
 
     def isProgress(self, **kwds) -> bool:

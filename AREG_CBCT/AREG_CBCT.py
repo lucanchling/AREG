@@ -26,7 +26,7 @@ def main(args):
         if not os.path.exists(outpath):
             os.makedirs(outpath)
         sitk.WriteTransform(transform, os.path.join(outpath,patient+'_'+reg_type+add_name+'_matrix.tfm'))
-        sitk.WriteImage(resample_t2, os.path.join(outpath,patient+'_'+reg_type+add_name+'.nii.gz'))
+        sitk.WriteImage(resample_t2, os.path.join(outpath,patient+'_'+reg_type+'Scan'+add_name+'.nii.gz'))
         sitk.WriteImage(resample_t2_seg, os.path.join(outpath,patient+'_'+reg_type+'MASK_'+add_name+'.nii.gz'))
         # if args.reg_lm:   
         #     transformedLandmarks = applyTransformLandmarks(LoadOnlyLandmarks(data['lmT2']), transform.GetInverse())
@@ -44,7 +44,7 @@ def main(args):
         
 if __name__ == "__main__":
     
-    print("PRE ASO")
+    print("AREG CBCT")
 
     parser = argparse.ArgumentParser()
 

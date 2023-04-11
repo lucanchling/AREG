@@ -12,13 +12,13 @@ import numpy as np
 import time
 from glob import iglob
 import os, json
-from slicer.util import pip_uninstall
+from slicer.util import pip_install,pip_uninstall
 
 from pkg_resources import working_set
 installed_packages_list = [f"{i.key}" for i in working_set]
 if 'simpleitk-simpleelastix' in installed_packages_list:
-    pip_uninstall('SimpleITK-SimpleElastix -q')
-
+    pip_uninstall('SimpleITK-SimpleElastix SimpleITK -q')
+    pip_install('SimpleITK -q')
 
 import SimpleITK as sitk
 

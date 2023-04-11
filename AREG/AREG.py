@@ -582,6 +582,8 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         
         self.SearchModelSegOr()
 
+
+
         if self.ui.lineEditOutputPath.text == "":
             dir, spl = os.path.split(scan_folder)
             self.ui.lineEditOutputPath.setText(os.path.join(dir, spl , "Registered"))
@@ -873,6 +875,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         else:
             self.module_name = self.module_name_bis
         self.ui.LabelNameExtension.setText(self.module_name)
+        self.displayModule = self.display[self.module_name.split(' ')[0]]
 
         if self.module_name_before != self.module_name:
             self.ui.LabelProgressPatient.setText(f"Patient : 0 / {self.nb_patient}")
@@ -891,10 +894,10 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         if progress == 0:
             self.updateProgessBar = False
 
-        if self.display[self.module_name.split(' ')[0]].isProgress(
+        if self.displayModule.isProgress(
             progress=progress, updateProgessBar=self.updateProgessBar
         ):
-            progress_bar, message = self.display[self.module_name.split(' ')[0]]()
+            progress_bar, message = self.displayModule()
             self.ui.progressBar.setValue(progress_bar)
             self.ui.LabelProgressPatient.setText(message)
             self.nb_change_bystep += 1
@@ -924,10 +927,15 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                         None,
                         self.list_Processes_Parameters[0]["Parameter"],
                     )
+                    if "Module" in self.list_Processes_Parameters[0].keys():
+                        self.module_name_bis = self.list_Processes_Parameters[0]["Module"]
+                    else:
+                        self.module_name_bis = None
                     self.processObserver = self.process.AddObserver(
                         "ModifiedEvent", self.onProcessUpdate
                     )
                     del self.list_Processes_Parameters[0]
+                    self.display[self.module_name.split(' ')[0]].progress = 0
                 except IndexError:
                     self.OnEndProcess()
 
@@ -988,10 +996,10 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         dic = methode.DicLandmark()
         # status = methode.existsLandmark('','')
         # Create a checkbox 
-        self.ldmk_reg_checkbox = qt.QCheckBox()
-        self.ldmk_reg_checkbox.setText("Register Landmark")
-        self.ldmk_reg_checkbox.setEnabled(False)
-        layout.addWidget(self.ldmk_reg_checkbox)
+        # self.ldmk_reg_checkbox = qt.QCheckBox()
+        # self.ldmk_reg_checkbox.setText("Register Landmark")
+        # self.ldmk_reg_checkbox.setEnabled(False)
+        # layout.addWidget(self.ldmk_reg_checkbox)
 
         
         dicchebox = {}
@@ -1000,9 +1008,11 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             layout.addWidget(Tab)
             listcheckboxlandmark = []
             tab = self.CreateMiniTab(Tab, title, 0, len(liste))
-            for landmark in liste:
+            for struct in liste:
                 checkbox = qt.QCheckBox()
-                checkbox.setText(landmark)
+                checkbox.setText(struct)
+                if struct in ['Cranial Base','Mandible','Maxilla']:
+                    checkbox.setChecked(True)
                 tab.addWidget(checkbox)
                 listcheckboxlandmark.append(checkbox)
             
@@ -1012,6 +1022,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         methode.merge_seg_checkbox = qt.QCheckBox()
         methode.merge_seg_checkbox.setText("Merge Segmentations")
+        methode.merge_seg_checkbox.setChecked(True)
         layout.addWidget(methode.merge_seg_checkbox)
 
         # return dicchebox, dicchebox
@@ -1062,7 +1073,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         # new_widget.resize(tabWidget.size)
         # tabWidget.setMaximumHeight(10)
         if numberItems is not None:
-            tabWidget.setMinimumHeight(40*numberItems)
+            tabWidget.setMinimumHeight(46*numberItems)
             
         layout = QGridLayout(new_widget)
 
