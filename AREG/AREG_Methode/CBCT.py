@@ -265,7 +265,8 @@ class Semi_CBCT(Methode):
                                 "SegmentInput" : False,
                                 "DCMInput": False,
         }
-        list_process.append({'Process':AMASSSProcess,'Parameter':parameter_amasss_seg,'Module':'AMASSS_CBCT Segmentation'})
+        if len(full_seg_struct) > 0:
+            list_process.append({'Process':AMASSSProcess,'Parameter':parameter_amasss_seg,'Module':'AMASSS_CBCT Segmentation'})
 
         nb_scan = self.NumberScan(kwargs['input_t1_folder'],kwargs['input_t2_folder'])
         display =  {'AREG_CBCT':DisplayAREGCBCT(nb_scan),
@@ -371,8 +372,8 @@ class Auto_CBCT(Semi_CBCT):
                                 "SegmentInput" : False,
                                 "DCMInput": False,
         }
-        list_process.append({'Process':AMASSSProcess,'Parameter':parameter_amasss_seg,'Module':'AMASSS_CBCT - Segmentation'})
-
+        if len(full_seg_struct) > 0:
+            list_process.append({'Process':AMASSSProcess,'Parameter':parameter_amasss_seg,'Module':'AMASSS_CBCT - Segmentation'})
 
         nb_scan = self.NumberScan(kwargs['input_t1_folder'], kwargs['input_t2_folder'])
         display = {'AMASSS_CBCT_MASK':DisplayAMASSS(nb_scan, len(full_reg_struct)),
