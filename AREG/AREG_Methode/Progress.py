@@ -136,8 +136,7 @@ class DisplayAMASSS(Display):
     def __call__(self)  -> Tuple[float, str] :
         self.progress+=.33
         self.progress_bar = (self.progress/(self.nb_struct*self.nb_scan_total))*100
-        nb_scan_done = int(self.progress//(self.nb_scan_total))
-        print("progress : {} | progress_bar : {} | nb_scan_done : {}/{}".format(self.progress,self.progress_bar,nb_scan_done,self.nb_scan_total))
+        nb_scan_done = int(self.progress//(self.nb_scan_total*self.nb_struct))
         self.message = f'Scan : {nb_scan_done} / {self.nb_scan_total}'
         return self.progress_bar, self.message
 

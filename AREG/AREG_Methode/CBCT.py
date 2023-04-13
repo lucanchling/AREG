@@ -265,7 +265,6 @@ class Semi_CBCT(Methode):
                                 "SegmentInput" : False,
                                 "DCMInput": False,
         }
-        list_process = []
         list_process.append({'Process':AMASSSProcess,'Parameter':parameter_amasss_seg,'Module':'AMASSS_CBCT Segmentation'})
 
         nb_scan = self.NumberScan(kwargs['input_t1_folder'],kwargs['input_t2_folder'])

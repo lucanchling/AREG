@@ -954,6 +954,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.nb_change_bystep = 0
 
         print("PROCESS DONE.")
+        print("Done in {} min and {} sec".format(int((time.time() - self.startTime) / 60), int((time.time() - self.startTime) % 60)))
         self.RunningUI(False)
 
         stopTime = time.time()
