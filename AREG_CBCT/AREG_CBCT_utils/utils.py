@@ -19,7 +19,8 @@ installed_packages_list = [f"{i.key}" for i in working_set]
 if 'simpleitk-simpleelastix' in installed_packages_list:
     pip_uninstall('SimpleITK-SimpleElastix SimpleITK -q')
     pip_install('SimpleITK -q')
-
+else:
+    pip_install('SimpleITK -q')
 import SimpleITK as sitk
 
 """
