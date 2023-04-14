@@ -913,6 +913,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
             else:
                 print("\n\n ========= PROCESSED ========= \n")
+                #print("PROGRESS :",self.displayModule.progress)
 
                 print(self.process.GetOutputText())
                 try:
@@ -944,9 +945,11 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         self.module_name_before = self.module_name
         self.nb_change_bystep = 0
-
+        total_time = time.time() - self.startTime
+        average_time = total_time / self.nb_patient
         print("PROCESS DONE.")
-        print("Done in {} min and {} sec".format(int((time.time() - self.startTime) / 60), int((time.time() - self.startTime) % 60)))
+        print("Done in {} min and {} sec".format(int(total_time / 60), int(total_time % 60)))
+        print("Average time per patient : {} min and {} sec".format(int(average_time / 60), int(average_time % 60)))
         self.RunningUI(False)
 
         stopTime = time.time()
