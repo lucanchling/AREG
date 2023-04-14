@@ -817,7 +817,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             qt.QMessageBox.warning(self.parent, "Warning", error.replace(",", "\n"))
 
         else:
-            self.list_Processes_Parameters, self.display = self.ActualMeth.Process(
+            self.list_Processes_Parameters = self.ActualMeth.Process(
                 input_t1_folder=self.ui.lineEditScanT1LmPath.text,
                 input_t2_folder=self.ui.lineEditScanT2LmPath.text,
                 folder_output=self.ui.lineEditOutputPath.text,
@@ -838,11 +838,8 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 None,
                 self.list_Processes_Parameters[0]["Parameter"],
             )
-            if "Module" in self.list_Processes_Parameters[0].keys():
-                self.module_name_bis = self.list_Processes_Parameters[0]["Module"]
-            else:
-                self.module_name_bis = None
-
+            self.module_name = self.list_Processes_Parameters[0]["Module"]
+            self.displayModule = self.list_Processes_Parameters[0]["Display"]
             self.processObserver = self.process.AddObserver(
                 "ModifiedEvent", self.onProcessUpdate
             )
@@ -870,12 +867,9 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         timer = f"Time : {time.time()-self.startTime:.2f}s"
         self.ui.LabelTimer.setText(timer)
         progress = caller.GetProgress()
-        if self.module_name_bis is None:
-            self.module_name = caller.GetModuleTitle()
-        else:
-            self.module_name = self.module_name_bis
+        # self.module_name = caller.GetModuleTitle() if self.module_name_bis is None else self.module_name_bis
         self.ui.LabelNameExtension.setText(self.module_name)
-        self.displayModule = self.display[self.module_name.split(' ')[0]]
+        # self.displayModule = self.displayModule_bis if self.displayModule_bis is not None else self.display[self.module_name.split(' ')[0]] 
 
         if self.module_name_before != self.module_name:
             self.ui.LabelProgressPatient.setText(f"Patient : 0 / {self.nb_patient}")
@@ -927,15 +921,13 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                         None,
                         self.list_Processes_Parameters[0]["Parameter"],
                     )
-                    if "Module" in self.list_Processes_Parameters[0].keys():
-                        self.module_name_bis = self.list_Processes_Parameters[0]["Module"]
-                    else:
-                        self.module_name_bis = None
+                    self.module_name = self.list_Processes_Parameters[0]["Module"]
+                    self.displayModule = self.list_Processes_Parameters[0]["Display"]
                     self.processObserver = self.process.AddObserver(
                         "ModifiedEvent", self.onProcessUpdate
                     )
                     del self.list_Processes_Parameters[0]
-                    self.display[self.module_name.split(' ')[0]].progress = 0
+                    # self.displayModule.progress = 0
                 except IndexError:
                     self.OnEndProcess()
 

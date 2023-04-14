@@ -127,10 +127,10 @@ class DisplayAREGCBCT(Display):
         return out
 
 class DisplayAMASSS(Display):
-    def __init__(self,nb_scan, nb_struct) -> None:
-        self.nb_scan_total = nb_scan
+    def __init__(self,nb_patient, nb_seg_struc, nb_reg=None) -> None:
+        self.nb_scan_total = nb_patient if nb_reg is None else nb_patient * nb_reg
         self.pred_step = 0
-        self.nb_struct = nb_struct
+        self.nb_struct = nb_seg_struc
         super().__init__()
 
     def __call__(self)  -> Tuple[float, str] :
