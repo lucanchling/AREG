@@ -127,20 +127,16 @@ class DisplayAREGCBCT(Display):
         return out
 
 class DisplayAMASSS(Display):
-    def __init__(self,nb_patient, nb_seg_struc, nb_reg=None, is_reg_for_scan=True) -> None:
-        self.nb_reg = nb_reg if nb_reg is not None else 1
+    def __init__(self,nb_patient, nb_seg_struc, nb_reg=None) -> None:
         self.nb_struct = nb_seg_struc
-        self.is_reg_for_scan = is_reg_for_scan
-        self.nb_scan_total = nb_patient * self.nb_reg if is_reg_for_scan else nb_patient
+        self.nb_scan_total = nb_patient * nb_reg if nb_reg is not None else nb_patient
         self.pred_step = 0
         super().__init__()
 
     def __call__(self)  -> Tuple[float, str] :
-        self.progress+=1#.33 * 2 / self.nb_reg if not self.is_reg_for_scan else 0.22
-        self.progress_bar = (self.progress/(self.nb_scan_total*self.nb_struct*self.nb_reg))*100 if self.progress_bar < 100 else 100
-        nb_scan_done = int(self.progress//(self.nb_scan_total))
-        #print("progress : {} | progress_bar : {} | nb_scan_done : {}".format(self.progress,self.progress_bar,nb_scan_done))
-        # print("progress :{}".format(self.progress))
+        self.progress+=1/(12+self.nb_struct)
+        self.progress_bar = (self.progress/(self.nb_scan_total))*100 if self.progress_bar < 100 else 99
+        nb_scan_done = int(self.progress)
         self.message = f'Scan : {nb_scan_done} / {self.nb_scan_total}'
         return self.progress_bar, self.message
 
