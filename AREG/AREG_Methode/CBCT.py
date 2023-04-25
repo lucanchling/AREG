@@ -245,7 +245,6 @@ class Semi_CBCT(Methode):
             list_process.append({'Process':AREGProcess,'Parameter':parameter_areg_cbct,'Module':'AREG_CBCT for {}'.format(full_reg_struct[i]),'Display':DisplayAREGCBCT(nb_scan)})
         
         # AMASSS PROCESS - SEGMENTATION
-        list_process = []
         AMASSSProcess = slicer.modules.amasss_cli
         parameter_amasss_seg_t1 = {"inputVolume": kwargs['input_t1_folder'],
                                 "modelDirectory": kwargs['model_folder_1'],
@@ -282,7 +281,7 @@ class Semi_CBCT(Methode):
                                 "DCMInput": False,
         }
         if len(full_seg_struct) > 0:
-            list_process.append({'Process':AMASSSProcess,'Parameter':parameter_amasss_seg_t1,'Module':'AMASSS_CBCT Segmentation of T1','Display':DisplayAMASSS(nb_scan,len(full_seg_struct),len(full_reg_struct),False)})
+            list_process.append({'Process':AMASSSProcess,'Parameter':parameter_amasss_seg_t1,'Module':'AMASSS_CBCT Segmentation of T1','Display':DisplayAMASSS(nb_scan,len(full_seg_struct))})
             list_process.append({'Process':AMASSSProcess,'Parameter':parameter_amasss_seg_t2,'Module':'AMASSS_CBCT Segmentation of T2','Display':DisplayAMASSS(nb_scan,len(full_seg_struct),len(full_reg_struct))})
         
         return list_process
@@ -406,11 +405,4 @@ class Auto_CBCT(Semi_CBCT):
             list_process.append({'Process':AMASSSProcess,'Parameter':parameter_amasss_seg_t1,'Module':'AMASSS_CBCT Segmentation for T1','Display':DisplayAMASSS(nb_scan,len(full_seg_struct))})
             list_process.append({'Process':AMASSSProcess,'Parameter':parameter_amasss_seg_t2,'Module':'AMASSS_CBCT Segmentation for T2','Display':DisplayAMASSS(nb_scan,len(full_seg_struct),len(full_reg_struct))})
 
-        display = {'AMASSS_CBCT_MASK':DisplayAMASSS(nb_scan, len(full_reg_struct)),
-                   'AMASSS_CBCT':DisplayAMASSS(nb_scan, len(full_seg_struct),len(full_reg_struct)),
-                   'AREG_CBCT':DisplayAREGCBCT(nb_scan),
-        }
         return list_process
-        
-        
-    
