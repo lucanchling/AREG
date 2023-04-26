@@ -1,5 +1,5 @@
 from AREG_Methode.Methode import Methode
-from AREG_Methode.Progress import DisplayAREGCBCT, DisplayAMASSS
+from AREG_Methode.Progress import DisplayAREGCBCT, DisplayAMASSS, DisplayALICBCT, DisplayASOCBCT
 import os,sys
 
 fpath = os.path.join(os.path.dirname(__file__), '..','..')
@@ -27,23 +27,6 @@ class Semi_CBCT(Methode):
     def NumberScan(self, scan_folder_t1: str,scan_folder_t2: str):
         return len(GetDictPatients(scan_folder_t1, scan_folder_t2))
         
-    def PatientScanLandmark(self, dic, scan_extension, lm_extension):
-        patients = {}
-
-        for extension,files in dic.items():
-            for file in files:
-                file_name = os.path.basename(file).split(".")[0]
-                patient = file_name.split('_scan')[0].split('_Scanreg')[0].split('_lm')[0]
-
-                if patient not in patients.keys():
-                    patients[patient] = {"dir": os.path.dirname(file),"lmrk":[]}
-                if extension in scan_extension:
-                    patients[patient]["scan"] = file
-                if extension in lm_extension:
-                    patients[patient]["lmrk"].append(file)
-
-        return patients
-    
     def getReferenceList(self):
         return {
             "Occlusal and Midsagittal Plane": "https://github.com/lucanchling/ASO_CBCT/releases/download/v01_goldmodels/Occlusal_Midsagittal_Plane.zip",
@@ -368,6 +351,216 @@ class Auto_CBCT(Semi_CBCT):
         # AMASSS PROCESS - SEGMENTATIONS
         AMASSSProcess = slicer.modules.amasss_cli
         parameter_amasss_seg_t1 = {"inputVolume": kwargs['input_t1_folder'],
+                                "modelDirectory": kwargs['model_folder_1'],
+                                "highDefinition": False,
+                                "skullStructure": seg_struct,
+                                "merge": "MERGE" if kwargs['merge_seg'] else "SEPARATE",
+                                "genVtk": True,
+                                "save_in_folder": False,
+                                "output_folder": kwargs['folder_output'],
+                                "precision": 50,
+                                "vtk_smooth": 5,
+                                "prediction_ID": 'Pred',
+                                "gpu_usage": self.getGPUUsage(),
+                                "cpu_usage": 1,
+                                "temp_fold" : self.tempAMASSS_folder,
+                                "SegmentInput" : False,
+                                "DCMInput": False,
+        }        
+        parameter_amasss_seg_t2 = {"inputVolume": kwargs['folder_output'],
+                                "modelDirectory": kwargs['model_folder_1'],
+                                "highDefinition": False,
+                                "skullStructure": seg_struct,
+                                "merge": "MERGE" if kwargs['merge_seg'] else "SEPARATE",
+                                "genVtk": True,
+                                "save_in_folder": False,
+                                "output_folder": kwargs['folder_output'],
+                                "precision": 50,
+                                "vtk_smooth": 5,
+                                "prediction_ID": 'Pred',
+                                "gpu_usage": self.getGPUUsage(),
+                                "cpu_usage": 1,
+                                "temp_fold" : self.tempAMASSS_folder,
+                                "SegmentInput" : False,
+                                "DCMInput": False,
+        }
+        if len(full_seg_struct) > 0:
+            list_process.append({'Process':AMASSSProcess,'Parameter':parameter_amasss_seg_t1,'Module':'AMASSS_CBCT Segmentation for T1','Display':DisplayAMASSS(nb_scan,len(full_seg_struct))})
+            list_process.append({'Process':AMASSSProcess,'Parameter':parameter_amasss_seg_t2,'Module':'AMASSS_CBCT Segmentation for T2','Display':DisplayAMASSS(nb_scan,len(full_seg_struct),len(full_reg_struct))})
+
+        return list_process
+
+class Or_Auto_CBCT(Semi_CBCT):
+
+    def getSegOrModelList(self):
+        return ({"AMASSS": {"Full Face Models":"https://github.com/lucanchling/AMASSS_CBCT/releases/download/v1.0.2/AMASSS_Models.zip","Mask Models":"https://github.com/lucanchling/AMASSS_CBCT/releases/download/v1.0.2/Masks_Models.zip"},
+                 "Orientation" : {"PreASO":"https://github.com/lucanchling/ASO_CBCT/releases/download/v01_preASOmodels/PreASOModels.zip","Reference":"https://github.com/lucanchling/ASO_CBCT/releases/download/v01_goldmodels/Frankfurt_Horizontal_Midsagittal_Plane.zip"}})
+
+    def getTestFileList(self):
+        return ("Oriented-Automated", "https://github.com/lucanchling/Areg_CBCT/releases/download/TestFiles/Test_Or_Full_AREG.zip")
+        
+    def TestScan(self, scan_folder_t1: str, scan_folder_t2: str):
+        return super().TestScan(scan_folder_t1, scan_folder_t2, liste_keys = ['scanT1','scanT2'])
+
+    def TestProcess(self, **kwargs) -> str:
+        out=''
+
+        testcheckbox = self.TestCheckbox(kwargs['dic_checkbox'])
+        if testcheckbox is not None:
+            out+=testcheckbox
+
+        if kwargs['input_t1_folder'] == '':
+            out+= 'Please select an input folder for T1 scans\n'
+
+        if kwargs['input_t2_folder'] == '':
+            out+= 'Please select an input folder for T2 scans\n'
+
+        if kwargs['folder_output'] == '':
+            out+= 'Please select an output folder\n'
+
+        if kwargs['add_in_namefile']== '':
+            out += 'Please select an extension for output files\n'
+
+        if kwargs['model_folder_1'] == '':
+            out += 'Please download the AMASSS models\n'
+
+        if kwargs['model_folder_2'] == '':
+            out += 'Please download the ALI models\n'
+
+        if kwargs['model_folder_3'] == '':
+            out += 'Please download the Orientation folder\n'
+
+        if out == '':
+            out = None
+
+        return out
+    
+    def Process(self, **kwargs):
+
+        # ====================== ASO Process ======================
+        # PRE ASO CBCT
+        temp_folder = slicer.util.tempDirectory()
+        time.sleep(0.01)
+        tempPREASO_folder = slicer.util.tempDirectory()
+        parameter_pre_aso = {'input': kwargs['input_t1_folder'],
+                             'output_folder': temp_folder,#kwargs['input_folder'],
+                             'model_folder':os.path.join(kwargs['model_folder_3'],'PreASO'),
+                             'SmallFOV':False,
+                             'temp_folder': tempPREASO_folder}
+        
+        PreOrientProcess = slicer.modules.pre_aso_cbct
+
+        list_lmrk_str = "N S Ba RPo LPo LOr ROr"
+        nb_landmark = 7
+
+        print('PRE_ASO param:', parameter_pre_aso)
+        print()
+
+        # ALI CBCT
+        documentsLocation = qt.QStandardPaths.DocumentsLocation
+        documents = qt.QStandardPaths.writableLocation(documentsLocation)
+        tempALI_folder = os.path.join(documents, slicer.app.applicationName+"_temp_ALI")
+        
+        parameter_ali =  {'input': temp_folder, 
+                    'dir_models': kwargs['model_folder_2'], 
+                    'landmarks': list_lmrk_str, 
+                    'save_in_folder': False, 
+                    'output_dir': temp_folder,
+                    'temp_fold': tempALI_folder,
+                    'DCMInput':False}
+        ALIProcess = slicer.modules.ali_cbct
+        
+        print('ALI param:',parameter_ali)
+        print()
+        # SEMI ASO CBCT
+        ASO_T1_Oriented = kwargs['input_t1_folder']+'Or'
+        parameter_semi_aso = {'input':temp_folder,#kwargs['input_folder'],
+                    'gold_folder':os.path.join(kwargs['model_folder_3'],'Reference'),
+                    'output_folder':ASO_T1_Oriented,
+                    'add_inname':'Or',
+                    'list_landmark':list_lmrk_str,
+                }
+        OrientProcess = slicer.modules.semi_aso_cbct
+
+        print("SEMI_ASO param:",parameter_semi_aso)
+ 
+        nb_scan = self.NumberScan(kwargs['input_t1_folder'], kwargs['input_t2_folder'])
+        print("FIRST NBSCAN: ",nb_scan)
+        list_process = [{'Process':PreOrientProcess,'Parameter':parameter_pre_aso,'Module':'PRE_ASO_CBCT','Display':DisplayASOCBCT(nb_scan)},
+                        {'Process':ALIProcess,'Parameter': parameter_ali,'Module':'ALI_CBCT','Display':DisplayALICBCT(nb_landmark,nb_scan)},
+                        {'Process':OrientProcess,'Parameter':parameter_semi_aso,'Module':'SEMI_ASO_CBCT','Display':DisplayASOCBCT(nb_scan)}
+        ]
+
+        # ====================== AREG Process ======================
+        list_struct = self.CheckboxisChecked(kwargs['dic_checkbox'])
+        
+        full_reg_struct = list_struct['Registration Type']
+        reg_struct = self.TranslateModels(full_reg_struct, True)
+        
+        # AMASSS PROCESS - MASK SEGMENTATIONS        
+        parameter_amasss_mask_t1 = {"inputVolume": ASO_T1_Oriented,
+                                "modelDirectory": kwargs['model_folder_1'],
+                                "highDefinition": False,
+                                "skullStructure": reg_struct,
+                                "merge": "SEPARATE",
+                                "genVtk": False,
+                                "save_in_folder": False,
+                                "output_folder": kwargs['input_t1_folder'],
+                                "precision": 50,
+                                "vtk_smooth": 5,
+                                "prediction_ID": 'Pred',
+                                "gpu_usage": self.getGPUUsage(),
+                                "cpu_usage": 1,
+                                "temp_fold" : self.tempAMASSS_folder,
+                                "SegmentInput" : False,
+                                "DCMInput": False,
+        }
+        parameter_amasss_mask_t2 = {"inputVolume": kwargs['input_t2_folder'],
+                                "modelDirectory": kwargs['model_folder_1'],
+                                "highDefinition": False,
+                                "skullStructure": reg_struct,
+                                "merge": "SEPARATE",
+                                "genVtk": False,
+                                "save_in_folder": False,
+                                "output_folder": kwargs['input_t2_folder'],
+                                "precision": 50,
+                                "vtk_smooth": 5,
+                                "prediction_ID": 'Pred',
+                                "gpu_usage": self.getGPUUsage(),
+                                "cpu_usage": 1,
+                                "temp_fold" : self.tempAMASSS_folder,
+                                "SegmentInput" : False,
+                                "DCMInput": False,
+        }
+        AMASSSProcess = slicer.modules.amasss_cli
+        list_process += [{'Process':AMASSSProcess,'Parameter':parameter_amasss_mask_t1, 'Module':'AMASSS_CBCT - Masks Generation for T1', 'Display': DisplayAMASSS(nb_scan, len(full_reg_struct))},
+                        {'Process':AMASSSProcess,'Parameter':parameter_amasss_mask_t2, 'Module':'AMASSS_CBCT - Masks Generation for T2', 'Display': DisplayAMASSS(nb_scan, len(full_reg_struct))},
+        ]
+
+        # print('AMASSS Mask Parameters:', parameter_amasss_mask_t1)
+        # print()
+
+        # AREG CBCT PROCESS
+        full_reg_struct = list_struct['Registration Type']
+        reg_struct = self.TranslateModels(full_reg_struct, False)
+        
+        AREGProcess = slicer.modules.areg_cbct
+        for i,reg in enumerate(reg_struct.split(' ')):
+            parameter_areg_cbct = {
+                        't1_folder':ASO_T1_Oriented,
+                        't2_folder':kwargs['input_t2_folder'],
+                        'reg_type':reg,
+                        'output_folder':kwargs['folder_output'],
+                        'add_name':kwargs['add_in_namefile'],
+                    }
+            list_process.append({'Process':AREGProcess,'Parameter':parameter_areg_cbct,'Module':'AREG_CBCT for {}'.format(full_reg_struct[i]),'Display': DisplayAREGCBCT(nb_scan)})
+
+        full_seg_struct = list_struct['AMASSS Segmentation']
+        seg_struct = self.TranslateModels(full_seg_struct, False)
+
+        # AMASSS PROCESS - SEGMENTATIONS
+        AMASSSProcess = slicer.modules.amasss_cli
+        parameter_amasss_seg_t1 = {"inputVolume": ASO_T1_Oriented,
                                 "modelDirectory": kwargs['model_folder_1'],
                                 "highDefinition": False,
                                 "skullStructure": seg_struct,

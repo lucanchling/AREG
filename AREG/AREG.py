@@ -20,7 +20,7 @@ from slicer.util import VTKObservationMixin
 from functools import partial
 
 from AREG_Methode.IOS import Auto_IOS, Semi_IOS
-from AREG_Methode.CBCT import Semi_CBCT, Auto_CBCT
+from AREG_Methode.CBCT import Semi_CBCT, Auto_CBCT, Or_Auto_CBCT
 from AREG_Methode.Methode import Methode
 from AREG_Methode.Progress import Display
 
@@ -261,10 +261,11 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             "Auto_IOS": Auto_IOS(self),
             "Semi_CBCT": Semi_CBCT(self),
             "Auto_CBCT": Auto_CBCT(self),
+            "Or_Auto_CBCT": Or_Auto_CBCT(self),
         }
         self.reference_lm = []
         self.ActualMeth = Methode
-        self.ActualMeth = self.MethodeDic["Auto_CBCT"]
+        self.ActualMeth = self.MethodeDic["Or_Auto_CBCT"]
         self.type = "CBCT"
         self.nb_scan = 0
         self.startprocess = 0
@@ -333,6 +334,12 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             self.ui.tohideCBCT_2,
         )
 
+        self.initCheckBoxCBCT(
+            self.MethodeDic["Or_Auto_CBCT"],
+            self.ui.LayoutOrAutoCBCT,
+            self.ui.tohideCBCT_3,
+        )
+
         self.HideComputeItems()
         # self.initTest(self.MethodeDic['Semi_IOS'])
 
@@ -363,8 +370,9 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.ui.ButtonSearchScan2.clicked.connect(
             lambda: self.SearchScan(self.ui.lineEditScanT2LmPath)
         )
-        self.ui.ButtonSearchModel1.connect("clicked(bool)", self.SearchModelSegOr)
+        self.ui.ButtonSearchModel1.clicked.connect(lambda: self.SearchModelSegOr(self.ui.lineEditModel1,self.ui.label_7.text.split('Folder ')[1]))
         self.ui.ButtonSearchModel2.connect("clicked(bool)", self.SearchModelALI)
+        self.ui.ButtonSearchModel3.clicked.connect(lambda: self.SearchModelSegOr(self.ui.lineEditModel3,self.ui.label_4.text.split('Folder ')[1]))
         self.ui.ButtonOriented.connect("clicked(bool)", self.onPredictButton)
         self.ui.ButtonOutput.connect("clicked(bool)", self.ChosePathOutput)
         self.ui.ButtonCancel.connect("clicked(bool)", self.onCancel)
@@ -392,7 +400,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     def SwitchMode(self, index):
         """Function to change the UI depending on the mode selected (Semi or Fully Automated)"""
-        if index == 1:  # Semi-Automated
+        if index == 2:  # Semi-Automated
             self.ui.label_6.setVisible(False)
             # self.ui.label_7.setVisible(False)
             self.ui.lineEditModel2.setVisible(False)
@@ -402,7 +410,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             self.ui.ButtonSearchModel2.setVisible(False)
             # self.ui.ButtonSearchModel1.setVisible(False)
 
-        if index == 0:  # Fully Automated
+        if index == 1:  # Fully Automated
             # self.ui.label_6.setVisible(True)
             # self.ui.label_7.setVisible(True)
             # self.ui.lineEditModel1.setVisible(True)
@@ -420,7 +428,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         """Function to change the UI and the Method in AREG depending on the selected type (Semi CBCT, Fully CBCT...)"""
         if (
             self.ui.CbInputType.currentIndex == 0
-            and self.ui.CbModeType.currentIndex == 1
+            and self.ui.CbModeType.currentIndex == 2
         ):
             self.ActualMeth = self.MethodeDic["Semi_CBCT"]
             self.ui.stackedWidget.setCurrentIndex(0)
@@ -429,6 +437,16 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         elif (
             self.ui.CbInputType.currentIndex == 0
             and self.ui.CbModeType.currentIndex == 0
+        ):
+            self.ActualMeth = self.MethodeDic["Or_Auto_CBCT"]
+            self.ui.stackedWidget.setCurrentIndex(2)
+            self.type = "CBCT"
+            self.ui.label_7.setText("Model Folder AMASSS")
+                        
+
+        elif (
+            self.ui.CbInputType.currentIndex == 0
+            and self.ui.CbModeType.currentIndex == 1
         ):
             self.ActualMeth = self.MethodeDic["Auto_CBCT"]
             self.ui.stackedWidget.setCurrentIndex(1)
@@ -440,7 +458,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             and self.ui.CbModeType.currentIndex == 1
         ):
             self.ActualMeth = self.MethodeDic["Semi_IOS"]
-            self.ui.stackedWidget.setCurrentIndex(2)
+            self.ui.stackedWidget.setCurrentIndex(3)
             self.type = "IOS"
 
         elif (
@@ -448,7 +466,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             and self.ui.CbModeType.currentIndex == 0
         ):
             self.ActualMeth = self.MethodeDic["Auto_IOS"]
-            self.ui.stackedWidget.setCurrentIndex(3)
+            self.ui.stackedWidget.setCurrentIndex(4)
             self.type = "IOS"
             self.ui.label_7.setText("Segmentation Model Folder")
         # UI Changes
@@ -470,16 +488,24 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         self.HideComputeItems()
 
-        if self.type == "CBCT":
+        if self.type == "CBCT" and self.ui.CbModeType.currentIndex != 0:
             # self.ui.advancedCollapsibleButton.setMaximumHeight(350)
             self.ui.label_6.setVisible(False)
             self.ui.lineEditModel2.setVisible(False)
             self.ui.ButtonSearchModel2.setVisible(False)
+            self.ui.label_4.setVisible(False)
+            self.ui.lineEditModel3.setVisible(False)
+            self.ui.ButtonSearchModel3.setVisible(False)
         else:
             # self.ui.advancedCollapsibleButton.setMaximumHeight(10000)
             self.ui.label_6.setVisible(True)
             self.ui.lineEditModel2.setVisible(True)
             self.ui.ButtonSearchModel2.setVisible(True)
+            self.ui.label_4.setVisible(True)
+            self.ui.label_4.setText("Model Folder Orientation")
+            self.ui.lineEditModel3.setVisible(True)
+            self.ui.ButtonSearchModel3.setVisible(True)
+
 
         # best = ['Ba','N','RPo']
         # for checkbox in self.logic.iterillimeted(self.dicchckbox):
@@ -575,14 +601,15 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 "Number of Patients to process : " + str(nb_scans)
             )
             self.ui.LabelProgressPatient.setText(
-                "Patient process : 0 /" + str(nb_scans)
+                "Patient processed : 0 /" + str(nb_scans)
             )
             self.enableCheckbox()
 
-        
-        self.SearchModelSegOr()
-
-
+        if self.type == "CBCT":
+            self.SearchModelSegOr(lineEdit=self.ui.lineEditModel1, name="AMASSS")
+            if  self.ui.CbModeType.currentIndex == 0:
+                self.SearchModelALI()
+                self.SearchModelSegOr(lineEdit=self.ui.lineEditModel3, name="Orientation")
 
         if self.ui.lineEditOutputPath.text == "":
             dir, spl = os.path.split(scan_folder)
@@ -605,8 +632,6 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 "Patient process : 0 /" + str(nb_scans)
             )
             self.enableCheckbox()
-
-
 
     def SearchScan(self, lineEdit):
         scan_folder = qt.QFileDialog.getExistingDirectory(
@@ -661,17 +686,18 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                     self.ActualMeth.search(ref_folder, "json")["json"][0]
                 )
 
-    def SearchModelSegOr(self):
-        name, urls = self.ActualMeth.getSegOrModelList()
+    def SearchModelSegOr(self, lineEdit, name):
+        listmodel = self.ActualMeth.getSegOrModelList()
 
-        if type(urls) is str:
+        if type(listmodel) is tuple:
             model_folder = self.DownloadUnzip(
-                url=urls,
+                url=listmodel[1],
                 directory=os.path.join(self.SlicerDownloadPath),
-                folder_name=os.path.join("Models", name),
+                folder_name=os.path.join("Models", listmodel[0]),
             )
         
         else:
+            urls = listmodel[name]
             for i,(name_bis,url) in enumerate(urls.items()):
                 _ = self.DownloadUnzip(
                     url=url,
@@ -679,50 +705,48 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                     folder_name=os.path.join("Models", name, name_bis),
                     num_downl=i+1,
                     total_downloads=len(urls)
-                )
-            
+                )                
             model_folder = os.path.join(self.SlicerDownloadPath, "Models", name)
-
+        
         if not model_folder == "":
-            error = self.ActualMeth.TestModel(model_folder, self.ui.lineEditModel1.name)
+            error = self.ActualMeth.TestModel(model_folder, lineEdit.name)
 
             if isinstance(error, str):
                 qt.QMessageBox.warning(self.parent, "Warning", error)
 
             else:
-                self.ui.lineEditModel1.setText(model_folder)
+                lineEdit.setText(model_folder)
                 self.enableCheckbox()
 
     def SearchModelALI(self, test=False):
-        listeLandmark = []
-        for key, data in self.ActualMeth.DicLandmark()["Landmark"].items():
-            listeLandmark += data
+        # listeLandmark = []
+        # for key, data in self.ActualMeth.DicLandmark()["Landmark"].items():
+        #     listeLandmark += data
 
-        if test:
-            ret = self.reference_lm
+        # else:
+        #     s = PopUpWindow(
+        #         title="Chose ALI Models to Download",
+        #         listename=sorted(listeLandmark),
+        #         type="checkbox",
+        #         tocheck=self.reference_lm,
+        #     )
+        #     s.exec_()
+        #     ret = s.checked
 
-        else:
-            s = PopUpWindow(
-                title="Chose ALI Models to Download",
-                listename=sorted(listeLandmark),
-                type="checkbox",
-                tocheck=self.reference_lm,
-            )
-            s.exec_()
-            ret = s.checked
+        ret = ['Ba','S','N','RPo','LPo','ROr','LOr']
 
         name, url = self.ActualMeth.getALIModelList()
-
+        dirr = self.SlicerDownloadPath.replace("AREG", "ASO")
         for i, model in enumerate(ret):
             _ = self.DownloadUnzip(
                 url=os.path.join(url, "{}.zip".format(model)),
-                directory=os.path.join(self.SlicerDownloadPath),
+                directory=dirr,
                 folder_name=os.path.join("Models", name, model),
                 num_downl=i + 1,
                 total_downloads=len(ret),
             )
 
-        model_folder = os.path.join(self.SlicerDownloadPath, "Models", name)
+        model_folder = os.path.join(dirr, "Models", name)
 
         if not model_folder == "":
             error = self.ActualMeth.TestModel(model_folder, self.ui.lineEditModel2.name)
@@ -808,6 +832,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             folder_output=self.ui.lineEditOutputPath.text,
             model_folder_1=self.ui.lineEditModel1.text,
             model_folder_2=self.ui.lineEditModel2.text,
+            model_folder_3=self.ui.lineEditModel3.text,
             add_in_namefile=self.ui.lineEditAddName.text,
             dic_checkbox=self.dicchckbox,
         )
@@ -823,6 +848,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 folder_output=self.ui.lineEditOutputPath.text,
                 model_folder_1=self.ui.lineEditModel1.text,
                 model_folder_2=self.ui.lineEditModel2.text,
+                model_folder_3=self.ui.lineEditModel3.text,
                 add_in_namefile=self.ui.lineEditAddName.text,
                 dic_checkbox=self.dicchckbox,
                 logPath=self.log_path,

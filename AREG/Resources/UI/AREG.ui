@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>490</width>
+    <width>497</width>
     <height>825</height>
    </rect>
   </property>
@@ -65,6 +65,16 @@
               </property>
              </widget>
             </item>
+            <item>
+             <widget class="QLabel" name="label_4">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="text">
+               <string>Model Folder 3</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
           <item>
@@ -91,16 +101,21 @@
             <item>
              <widget class="QComboBox" name="CbModeType">
               <property name="currentText">
-               <string>Fully-Automated</string>
+               <string>Orientation and Registration</string>
               </property>
               <item>
                <property name="text">
-                <string>Fully-Automated</string>
+                <string>Orientation and Registration</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Semi-Automated</string>
+                <string>Fully-Automated Registration</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Semi-Automated Registration</string>
                </property>
               </item>
              </widget>
@@ -116,6 +131,9 @@
             </item>
             <item>
              <widget class="QLineEdit" name="lineEditModel2"/>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEditModel3"/>
             </item>
            </layout>
           </item>
@@ -152,14 +170,21 @@
             <item>
              <widget class="QPushButton" name="ButtonSearchModel1">
               <property name="text">
-               <string>Select</string>
+               <string>Download</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QPushButton" name="ButtonSearchModel2">
               <property name="text">
-               <string>Select</string>
+               <string>Download</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="ButtonSearchModel3">
+              <property name="text">
+               <string>Download</string>
               </property>
              </widget>
             </item>
@@ -187,7 +212,7 @@
       <item>
        <widget class="QStackedWidget" name="stackedWidget">
         <property name="currentIndex">
-         <number>1</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="PageSemiCBCT">
          <layout class="QVBoxLayout" name="verticalLayout_11">
@@ -198,7 +223,7 @@
               <item>
                <widget class="QLabel" name="tohideCBCT">
                 <property name="text">
-                 <string>TextLabel</string>
+                 <string>Semi CBCT</string>
                 </property>
                </widget>
               </item>
@@ -217,7 +242,26 @@
               <item>
                <widget class="QLabel" name="tohideCBCT_2">
                 <property name="text">
-                 <string>TextLabel</string>
+                 <string>Auto CBCT</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="PageOrAutoCBCT">
+         <layout class="QVBoxLayout" name="verticalLayoutOr_11">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayoutOr_3">
+            <item>
+             <layout class="QVBoxLayout" name="LayoutOrAutoCBCT">
+              <item>
+               <widget class="QLabel" name="tohideCBCT_3">
+                <property name="text">
+                 <string>Or Auto CBCT</string>
                 </property>
                </widget>
               </item>
@@ -243,8 +287,8 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>87</width>
-                   <height>37</height>
+                   <width>437</width>
+                   <height>198</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -291,7 +335,7 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>87</width>
+                   <width>437</width>
                    <height>198</height>
                   </rect>
                  </property>
