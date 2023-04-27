@@ -61,7 +61,7 @@
             <item>
              <widget class="QLabel" name="label_6">
               <property name="text">
-               <string>Model Folder ALI</string>
+               <string>Model Folder 2</string>
               </property>
              </widget>
             </item>
@@ -287,8 +287,8 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>437</width>
-                   <height>198</height>
+                   <width>98</width>
+                   <height>37</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -335,7 +335,7 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>437</width>
+                   <width>98</width>
                    <height>198</height>
                   </rect>
                  </property>

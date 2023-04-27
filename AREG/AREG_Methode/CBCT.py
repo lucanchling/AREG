@@ -17,6 +17,7 @@ class Semi_CBCT(Methode):
         documentsLocation = qt.QStandardPaths.DocumentsLocation
         documents = qt.QStandardPaths.writableLocation(documentsLocation)
         self.tempAMASSS_folder = os.path.join(documents, slicer.app.applicationName+"_temp_AMASSS")
+        self.tempALI_folder = os.path.join(documents, slicer.app.applicationName+"_temp_ALI")
 
     def getGPUUsage(self):
         if platform.system() == 'Darwin':
@@ -235,7 +236,7 @@ class Semi_CBCT(Methode):
                                 "skullStructure": seg_struct,
                                 "merge": "MERGE" if kwargs['merge_seg'] else "SEPARATE",
                                 "genVtk": True,
-                                "save_in_folder": False,
+                                "save_in_folder": True,
                                 "output_folder": kwargs['folder_output'],
                                 "precision": 50,
                                 "vtk_smooth": 5,
@@ -252,7 +253,7 @@ class Semi_CBCT(Methode):
                                 "skullStructure": seg_struct,
                                 "merge": "MERGE" if kwargs['merge_seg'] else "SEPARATE",
                                 "genVtk": True,
-                                "save_in_folder": False,
+                                "save_in_folder": True,
                                 "output_folder": kwargs['folder_output'],
                                 "precision": 50,
                                 "vtk_smooth": 5,
@@ -393,8 +394,15 @@ class Auto_CBCT(Semi_CBCT):
 class Or_Auto_CBCT(Semi_CBCT):
 
     def getSegOrModelList(self):
-        return ({"AMASSS": {"Full Face Models":"https://github.com/lucanchling/AMASSS_CBCT/releases/download/v1.0.2/AMASSS_Models.zip","Mask Models":"https://github.com/lucanchling/AMASSS_CBCT/releases/download/v1.0.2/Masks_Models.zip"},
-                 "Orientation" : {"PreASO":"https://github.com/lucanchling/ASO_CBCT/releases/download/v01_preASOmodels/PreASOModels.zip","Reference":"https://github.com/lucanchling/ASO_CBCT/releases/download/v01_goldmodels/Frankfurt_Horizontal_Midsagittal_Plane.zip"}})
+        return ({
+            "AMASSS": 
+                {"Full Face Models":"https://github.com/lucanchling/AMASSS_CBCT/releases/download/v1.0.2/AMASSS_Models.zip",
+                 "Mask Models":"https://github.com/lucanchling/AMASSS_CBCT/releases/download/v1.0.2/Masks_Models.zip"},
+            "Orientation" : 
+                {"PreASO":"https://github.com/lucanchling/ASO_CBCT/releases/download/v01_preASOmodels/PreASOModels.zip",
+                 "Reference":"https://github.com/lucanchling/ASO_CBCT/releases/download/v01_goldmodels/Frankfurt_Horizontal_Midsagittal_Plane.zip"
+                 }
+                 })
 
     def getTestFileList(self):
         return ("Oriented-Automated", "https://github.com/lucanchling/Areg_CBCT/releases/download/TestFiles/Test_Or_Full_AREG.zip")
@@ -444,7 +452,7 @@ class Or_Auto_CBCT(Semi_CBCT):
         tempPREASO_folder = slicer.util.tempDirectory()
         parameter_pre_aso = {'input': kwargs['input_t1_folder'],
                              'output_folder': temp_folder,#kwargs['input_folder'],
-                             'model_folder':os.path.join(kwargs['model_folder_3'],'PreASO'),
+                             'model_folder':os.path.join(kwargs['model_folder_2'],'PreASO'),
                              'SmallFOV':False,
                              'temp_folder': tempPREASO_folder}
         
@@ -457,16 +465,12 @@ class Or_Auto_CBCT(Semi_CBCT):
         print()
 
         # ALI CBCT
-        documentsLocation = qt.QStandardPaths.DocumentsLocation
-        documents = qt.QStandardPaths.writableLocation(documentsLocation)
-        tempALI_folder = os.path.join(documents, slicer.app.applicationName+"_temp_ALI")
-        
         parameter_ali =  {'input': temp_folder, 
-                    'dir_models': kwargs['model_folder_2'], 
+                    'dir_models': os.path.join(kwargs['model_folder_2'],"ALIModels"), 
                     'landmarks': list_lmrk_str, 
                     'save_in_folder': False, 
                     'output_dir': temp_folder,
-                    'temp_fold': tempALI_folder,
+                    'temp_fold': self.tempALI_folder,
                     'DCMInput':False}
         ALIProcess = slicer.modules.ali_cbct
         
@@ -475,7 +479,7 @@ class Or_Auto_CBCT(Semi_CBCT):
         # SEMI ASO CBCT
         ASO_T1_Oriented = kwargs['input_t1_folder']+'Or'
         parameter_semi_aso = {'input':temp_folder,#kwargs['input_folder'],
-                    'gold_folder':os.path.join(kwargs['model_folder_3'],'Reference'),
+                    'gold_folder':os.path.join(kwargs['model_folder_2'],'Reference'),
                     'output_folder':ASO_T1_Oriented,
                     'add_inname':'Or',
                     'list_landmark':list_lmrk_str,
@@ -485,7 +489,6 @@ class Or_Auto_CBCT(Semi_CBCT):
         print("SEMI_ASO param:",parameter_semi_aso)
  
         nb_scan = self.NumberScan(kwargs['input_t1_folder'], kwargs['input_t2_folder'])
-        print("FIRST NBSCAN: ",nb_scan)
         list_process = [{'Process':PreOrientProcess,'Parameter':parameter_pre_aso,'Module':'PRE_ASO_CBCT','Display':DisplayASOCBCT(nb_scan)},
                         {'Process':ALIProcess,'Parameter': parameter_ali,'Module':'ALI_CBCT','Display':DisplayALICBCT(nb_landmark,nb_scan)},
                         {'Process':OrientProcess,'Parameter':parameter_semi_aso,'Module':'SEMI_ASO_CBCT','Display':DisplayASOCBCT(nb_scan)}
