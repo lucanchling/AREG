@@ -306,26 +306,8 @@ class Auto_CBCT(Semi_CBCT):
                                 "SegmentInput" : False,
                                 "DCMInput": False,
         }
-        parameter_amasss_mask_t2 = {"inputVolume": kwargs['input_t2_folder'],
-                                "modelDirectory": kwargs['model_folder_1'],
-                                "highDefinition": False,
-                                "skullStructure": reg_struct,
-                                "merge": "SEPARATE",
-                                "genVtk": False,
-                                "save_in_folder": False,
-                                "output_folder": kwargs['input_t2_folder'],
-                                "precision": 50,
-                                "vtk_smooth": 5,
-                                "prediction_ID": 'Pred',
-                                "gpu_usage": self.getGPUUsage(),
-                                "cpu_usage": 1,
-                                "temp_fold" : self.tempAMASSS_folder,
-                                "SegmentInput" : False,
-                                "DCMInput": False,
-        }
         AMASSSProcess = slicer.modules.amasss_cli
         list_process = [{'Process':AMASSSProcess,'Parameter':parameter_amasss_mask_t1, 'Module':'AMASSS_CBCT - Masks Generation for T1', 'Display': DisplayAMASSS(nb_scan, len(full_reg_struct))},
-                        {'Process':AMASSSProcess,'Parameter':parameter_amasss_mask_t2, 'Module':'AMASSS_CBCT - Masks Generation for T2', 'Display': DisplayAMASSS(nb_scan, len(full_reg_struct))},
         ]
 
         # print('AMASSS Mask Parameters:', parameter_amasss_mask_t1)
@@ -515,27 +497,8 @@ class Or_Auto_CBCT(Semi_CBCT):
                                 "SegmentInput" : False,
                                 "DCMInput": False,
         }
-        parameter_amasss_mask_t2 = {"inputVolume": kwargs['input_t2_folder'],
-                                "modelDirectory": kwargs['model_folder_1'],
-                                "highDefinition": False,
-                                "skullStructure": reg_struct,
-                                "merge": "SEPARATE",
-                                "genVtk": False,
-                                "save_in_folder": False,
-                                "output_folder": kwargs['input_t2_folder'],
-                                "precision": 50,
-                                "vtk_smooth": 5,
-                                "prediction_ID": 'Pred',
-                                "gpu_usage": self.getGPUUsage(),
-                                "cpu_usage": 1,
-                                "temp_fold" : self.tempAMASSS_folder,
-                                "SegmentInput" : False,
-                                "DCMInput": False,
-        }
         AMASSSProcess = slicer.modules.amasss_cli
-        list_process += [{'Process':AMASSSProcess,'Parameter':parameter_amasss_mask_t1, 'Module':'AMASSS_CBCT - Masks Generation for T1', 'Display': DisplayAMASSS(nb_scan, len(full_reg_struct))},
-                        {'Process':AMASSSProcess,'Parameter':parameter_amasss_mask_t2, 'Module':'AMASSS_CBCT - Masks Generation for T2', 'Display': DisplayAMASSS(nb_scan, len(full_reg_struct))},
-        ]
+        list_process += [{'Process':AMASSSProcess,'Parameter':parameter_amasss_mask_t1, 'Module':'AMASSS_CBCT - Masks Generation for T1', 'Display': DisplayAMASSS(nb_scan, len(full_reg_struct))}]
 
         # print('AMASSS Mask Parameters:', parameter_amasss_mask_t1)
         # print()

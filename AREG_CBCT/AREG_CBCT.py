@@ -20,16 +20,15 @@ def main(args):
     
     for patient,data in patients.items():
         outpath = os.path.join(output_dir,translate(reg_type),patient+'_OutReg')
-        ScanOutPath, MaskOutPath, TransOutPath = os.path.join(outpath,patient+'_'+reg_type+'Scan'+add_name+'.nii.gz'),os.path.join(outpath,patient+'_'+reg_type+'MASK_'+add_name+'.nii.gz'),os.path.join(outpath,patient+'_'+reg_type+add_name+'_matrix.tfm')
+        ScanOutPath, TransOutPath = os.path.join(outpath,patient+'_'+reg_type+'Scan'+add_name+'.nii.gz'),os.path.join(outpath,patient+'_'+reg_type+add_name+'_matrix.tfm')
 
         if not os.path.exists(ScanOutPath):
-            transform, resample_t2, resample_t2_seg = VoxelBasedRegistration(data['scanT1'],data['scanT2'],data['segT1'],data['segT2'],approx=True)
+            transform, resample_t2 = VoxelBasedRegistration(data['scanT1'],data['scanT2'],data['segT1'],approx=True)
         
             if not os.path.exists(outpath):
                 os.makedirs(outpath)
             sitk.WriteTransform(transform, TransOutPath)
             sitk.WriteImage(resample_t2, ScanOutPath)
-            sitk.WriteImage(resample_t2_seg, MaskOutPath)
             # if args.reg_lm:   
             #     transformedLandmarks = applyTransformLandmarks(LoadOnlyLandmarks(data['lmT2']), transform.GetInverse())
             #     WriteJson(transformedLandmarks, os.path.join(outpath,patient+'_lm_'+add_name+'.mrk.json'))

@@ -98,7 +98,7 @@ def GetMatrixPatients(folder_path):
 def GetDictPatients(folder_t1_path, folder_t2_path, segmentationType=None, todo_str='', matrix_folder=None):
     """Return a dictionary with patients for both time points"""
     patients_t1 = GetPatients(folder_t1_path, time_point='T1', segmentationType=segmentationType)
-    patients_t2 = GetPatients(folder_t2_path, time_point='T2', segmentationType=segmentationType)
+    patients_t2 = GetPatients(folder_t2_path, time_point='T2', segmentationType=None)
     patients = MergeDicts(patients_t1,patients_t2)
         
     if matrix_folder is not None:
@@ -416,7 +416,7 @@ def SimpleElastixApprox(fixed_image, moving_image):
     parameterMapVector.append(sitk.GetDefaultParameterMap("rigid"))
     elastixImageFilter.SetParameterMap(parameterMapVector)
 
-    elastixImageFilter.SetParameter("MaximumNumberOfIterations", "5000")
+    # elastixImageFilter.SetParameter("MaximumNumberOfIterations", "5000")
     # elastixImageFilter.SetParameter("NumberOfSpatialSamples", "100000")
     
     tic = time.time()
@@ -443,7 +443,7 @@ def SimpleElastixReg(fixed_image, moving_image):
     elastixImageFilter.SetParameterMap(parameterMapVector)
     
     elastixImageFilter.SetParameter("ErodeMask", "true")
-    elastixImageFilter.SetParameter("MaximumNumberOfIterations", "10000")
+    # elastixImageFilter.SetParameter("MaximumNumberOfIterations", "10000")
     # elastixImageFilter.SetParameter("NumberOfSpatialSamples", "100000")
     
     tic = time.time()
@@ -455,7 +455,7 @@ def SimpleElastixReg(fixed_image, moving_image):
 
     return resultImage, transformParameterMap
 
-def VoxelBasedRegistration(fixed_image_path,moving_image_path,fixed_seg_path,moving_seg_path,approx=False):
+def VoxelBasedRegistration(fixed_image_path,moving_image_path,fixed_seg_path,approx=False):
 
     # Copy T1 and T2 images to output directory
     # shutil.copyfile(fixed_image_path, os.path.join(outpath,patient+'_T1.nii.gz'))
@@ -466,7 +466,6 @@ def VoxelBasedRegistration(fixed_image_path,moving_image_path,fixed_seg_path,mov
     fixed_seg = sitk.ReadImage(fixed_seg_path)
     fixed_seg.SetOrigin(fixed_image.GetOrigin())
     moving_image = sitk.ReadImage(moving_image_path)
-    moving_seg = sitk.ReadImage(moving_seg_path)
 
     # Apply mask to images
     fixed_image_masked = applyMask(fixed_image, fixed_seg)
@@ -499,7 +498,6 @@ def VoxelBasedRegistration(fixed_image_path,moving_image_path,fixed_seg_path,mov
     # Resample images and segmentations using the final transform
     # tic = time.time()
     resample_t2 = sitk.Cast(ResampleImage(moving_image, transform),sitk.sitkInt16)
-    resample_t2_seg = ResampleImage(moving_seg, transform)
 
     
     # Compare segmentations
@@ -509,7 +507,7 @@ def VoxelBasedRegistration(fixed_image_path,moving_image_path,fixed_seg_path,mov
     # sitk.WriteImage(sitk.Cast(resample_t2,sitk.sitkInt16), os.path.join(outpath,patient+'_ScanReg.nii.gz'))
     # print('Resampling time: ', round(time.time() - tic,2),'s')
 
-    return transform, resample_t2, resample_t2_seg
+    return transform, resample_t2
 
 
 """
