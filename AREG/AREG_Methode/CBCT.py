@@ -433,9 +433,6 @@ class Or_Auto_CBCT(Semi_CBCT):
             out += 'Please download the AMASSS models\n'
 
         if kwargs['model_folder_2'] == '':
-            out += 'Please download the ALI models\n'
-
-        if kwargs['model_folder_3'] == '':
             out += 'Please download the Orientation folder\n'
 
         if out == '':

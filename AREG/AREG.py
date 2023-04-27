@@ -603,7 +603,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             self.SearchModelSegOr(lineEdit=self.ui.lineEditModel1, name="AMASSS")
             if  self.ui.CbModeType.currentIndex == 0:
                 self.SearchModelALI()
-                self.SearchModelSegOr(lineEdit=self.ui.lineEditModel3, name="Orientation")
+                self.SearchModelSegOr(lineEdit=self.ui.lineEditModel2, name="Orientation")
 
         if self.ui.lineEditOutputPath.text == "":
             dir, spl = os.path.split(scan_folder)
