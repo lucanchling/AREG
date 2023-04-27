@@ -416,7 +416,7 @@ def SimpleElastixApprox(fixed_image, moving_image):
     parameterMapVector.append(sitk.GetDefaultParameterMap("rigid"))
     elastixImageFilter.SetParameterMap(parameterMapVector)
 
-    # elastixImageFilter.SetParameter("MaximumNumberOfIterations", "5000")
+    elastixImageFilter.SetParameter("MaximumNumberOfIterations", "5000")
     # elastixImageFilter.SetParameter("NumberOfSpatialSamples", "100000")
     
     tic = time.time()
@@ -443,7 +443,7 @@ def SimpleElastixReg(fixed_image, moving_image):
     elastixImageFilter.SetParameterMap(parameterMapVector)
     
     elastixImageFilter.SetParameter("ErodeMask", "true")
-    # elastixImageFilter.SetParameter("MaximumNumberOfIterations", "10000")
+    elastixImageFilter.SetParameter("MaximumNumberOfIterations", "10000")
     # elastixImageFilter.SetParameter("NumberOfSpatialSamples", "100000")
     
     tic = time.time()
