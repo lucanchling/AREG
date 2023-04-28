@@ -444,7 +444,8 @@ def SimpleElastixReg(fixed_image, moving_image):
     
     elastixImageFilter.SetParameter("ErodeMask", "true")
     elastixImageFilter.SetParameter("MaximumNumberOfIterations", "10000")
-    # elastixImageFilter.SetParameter("NumberOfSpatialSamples", "100000")
+    elastixImageFilter.SetParameter("NumberOfSpatialSamples", "10000")
+    elastixImageFilter.SetParameter("NumberOfResolutions", "1")
     
     tic = time.time()
     elastixImageFilter.Execute()
