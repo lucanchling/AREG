@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>497</width>
-    <height>825</height>
+    <height>856</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -88,6 +88,9 @@
            <layout class="QVBoxLayout" name="verticalLayout_4">
             <item>
              <widget class="QComboBox" name="CbInputType">
+              <property name="toolTip">
+               <string>To select the type of registration</string>
+              </property>
               <item>
                <property name="text">
                 <string>CBCT to CBCT</string>
@@ -107,6 +110,9 @@
             </item>
             <item>
              <widget class="QComboBox" name="CbCBCTInputType">
+              <property name="toolTip">
+               <string>To select the type of input for CBCT</string>
+              </property>
               <item>
                <property name="text">
                 <string>NIFTI, NRRD, GIPL</string>
@@ -121,8 +127,17 @@
             </item>
             <item>
              <widget class="QComboBox" name="CbModeType">
+              <property name="toolTip">
+               <string>To select the mode of registration</string>
+              </property>
+              <property name="accessibleDescription">
+               <string/>
+              </property>
               <property name="currentText">
                <string>Orientation and Registration</string>
+              </property>
+              <property name="placeholderText">
+               <string/>
               </property>
               <item>
                <property name="text">
@@ -142,10 +157,18 @@
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEditScanT1LmPath"/>
+             <widget class="QLineEdit" name="lineEditScanT1LmPath">
+              <property name="toolTip">
+               <string>Path to T1 folder</string>
+              </property>
+             </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEditScanT2LmPath"/>
+             <widget class="QLineEdit" name="lineEditScanT2LmPath">
+              <property name="toolTip">
+               <string>Path to T2 folder</string>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QLineEdit" name="lineEditModel1"/>
@@ -176,6 +199,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="ButtonTestFiles">
+              <property name="toolTip">
+               <string>To automatically download all the needed files to run the process (works for all modes)</string>
+              </property>
               <property name="text">
                <string>Test Files</string>
               </property>
@@ -183,6 +209,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="ButtonSearchScan1">
+              <property name="toolTip">
+               <string>To select the T1 folder</string>
+              </property>
               <property name="text">
                <string>Select</string>
               </property>
@@ -190,6 +219,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="ButtonSearchScan2">
+              <property name="toolTip">
+               <string>To select the T2 folder</string>
+              </property>
               <property name="text">
                <string>Select</string>
               </property>
@@ -413,6 +445,9 @@
           </item>
           <item>
            <widget class="QLineEdit" name="lineEditAddName">
+            <property name="toolTip">
+             <string>Extension to add for output files</string>
+            </property>
             <property name="text">
              <string>Reg</string>
             </property>
@@ -430,10 +465,17 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEditOutputPath"/>
+           <widget class="QLineEdit" name="lineEditOutputPath">
+            <property name="toolTip">
+             <string>Path to output folder</string>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QPushButton" name="ButtonOutput">
+            <property name="toolTip">
+             <string>To select output folder</string>
+            </property>
             <property name="text">
              <string>Select</string>
             </property>
@@ -463,6 +505,9 @@
         </item>
         <item>
          <widget class="QPushButton" name="ButtonOriented">
+          <property name="toolTip">
+           <string>Run the process with the selected parameters </string>
+          </property>
           <property name="text">
            <string>Run</string>
           </property>
