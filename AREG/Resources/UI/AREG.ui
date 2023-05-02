@@ -31,6 +31,13 @@
              </widget>
             </item>
             <item>
+             <widget class="QLabel" name="label_CBCTInputType">
+              <property name="text">
+               <string>Input Type</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QLabel" name="label_5">
               <property name="text">
                <string>Mode</string>
@@ -99,6 +106,20 @@
              </widget>
             </item>
             <item>
+             <widget class="QComboBox" name="CbCBCTInputType">
+              <item>
+               <property name="text">
+                <string>NIFTI, NRRD, GIPL</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>DICOM</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
              <widget class="QComboBox" name="CbModeType">
               <property name="currentText">
                <string>Orientation and Registration</string>
@@ -141,6 +162,13 @@
            <layout class="QVBoxLayout" name="verticalLayout_6">
             <item>
              <widget class="QLabel" name="label_128797">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_CBCTInputType_2">
               <property name="text">
                <string/>
               </property>

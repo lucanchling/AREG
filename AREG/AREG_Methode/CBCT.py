@@ -225,6 +225,7 @@ class Semi_CBCT(Methode):
                         'reg_type':reg,
                         'output_folder':kwargs['folder_output'],
                         'add_name':kwargs['add_in_namefile'],
+                        'DCMInput':False,
                     }
             list_process.append({'Process':AREGProcess,'Parameter':parameter_areg_cbct,'Module':'AREG_CBCT for {}'.format(full_reg_struct[i]),'Display':DisplayAREGCBCT(nb_scan)})
         
@@ -275,7 +276,7 @@ class Auto_CBCT(Semi_CBCT):
 
     def getTestFileList(self):
         return ("Fully-Automated", "https://github.com/lucanchling/Areg_CBCT/releases/download/TestFiles/Test_Full_AREG.zip")
-        
+    
     def TestScan(self, scan_folder_t1: str, scan_folder_t2: str):
         return super().TestScan(scan_folder_t1, scan_folder_t2, liste_keys = ['scanT1','scanT2'])
 
@@ -325,6 +326,7 @@ class Auto_CBCT(Semi_CBCT):
                         'reg_type':reg,
                         'output_folder':kwargs['folder_output'],
                         'add_name':kwargs['add_in_namefile'],
+                        'DCMInput':False,
                     }
             list_process.append({'Process':AREGProcess,'Parameter':parameter_areg_cbct,'Module':'AREG_CBCT for {}'.format(full_reg_struct[i]),'Display': DisplayAREGCBCT(nb_scan)})
 
@@ -388,9 +390,36 @@ class Or_Auto_CBCT(Semi_CBCT):
 
     def getTestFileList(self):
         return ("Oriented-Automated", "https://github.com/lucanchling/Areg_CBCT/releases/download/TestFiles/Test_Or_Full_AREG.zip")
-        
+    
+    def getTestFileListDCM(self):
+        return ("Oriented-Automated", "https://github.com/lucanchling/Areg_CBCT/releases/download/TestFiles/Test_Or_Full_DCM.zip")
+    
     def TestScan(self, scan_folder_t1: str, scan_folder_t2: str):
         return super().TestScan(scan_folder_t1, scan_folder_t2, liste_keys = ['scanT1','scanT2'])
+
+    def TestScanDCM(self, scan_folder_t1: str, scan_folder_t2) -> str:
+        out = ''
+        liste_t1 = [folder for folder in os.listdir(scan_folder_t1) if os.path.isdir(os.path.join(scan_folder_t1,folder)) and folder != 'NIFTI']
+        liste_t2 = [folder for folder in os.listdir(scan_folder_t2) if os.path.isdir(os.path.join(scan_folder_t2,folder)) and folder != 'NIFTI']
+        some = False
+        for pat in liste_t2:
+            if pat not in liste_t1:        
+                out+= 'T1 folder --> patient {} is missing\n'.format(pat)
+                some = True
+
+        if some:
+            out+='---------------------------------------------------------------\n'
+        for pat in liste_t1:
+            if pat not in liste_t2:
+                out+= 'T2 folder --> patient {} is missing\n'.format(pat)
+        
+        if out == '':
+            out = None
+        
+        return out
+
+    def NumberScanDCM(self, scan_folder_t1: str, scan_folder_t2: str):
+        return len(os.listdir(scan_folder_t1))
 
     def TestProcess(self, **kwargs) -> str:
         out=''
@@ -433,7 +462,9 @@ class Or_Auto_CBCT(Semi_CBCT):
                              'output_folder': temp_folder,#kwargs['input_folder'],
                              'model_folder':os.path.join(kwargs['model_folder_2'],'PreASO'),
                              'SmallFOV':False,
-                             'temp_folder': tempPREASO_folder}
+                             'temp_folder': tempPREASO_folder,
+                             'DCMInput':kwargs['isDCMInput'],
+                             }
         
         PreOrientProcess = slicer.modules.pre_aso_cbct
 
@@ -467,7 +498,7 @@ class Or_Auto_CBCT(Semi_CBCT):
 
         print("SEMI_ASO param:",parameter_semi_aso)
  
-        nb_scan = self.NumberScan(kwargs['input_t1_folder'], kwargs['input_t2_folder'])
+        nb_scan = self.NumberScan(kwargs['input_t1_folder'], kwargs['input_t2_folder']) if not kwargs['isDCMInput'] else self.NumberScanDCM(kwargs['input_t1_folder'], kwargs['input_t2_folder'])
         list_process = [{'Process':PreOrientProcess,'Parameter':parameter_pre_aso,'Module':'PRE_ASO_CBCT','Display':DisplayASOCBCT(nb_scan)},
                         {'Process':ALIProcess,'Parameter': parameter_ali,'Module':'ALI_CBCT','Display':DisplayALICBCT(nb_landmark,nb_scan)},
                         {'Process':OrientProcess,'Parameter':parameter_semi_aso,'Module':'SEMI_ASO_CBCT','Display':DisplayASOCBCT(nb_scan)}
@@ -515,6 +546,7 @@ class Or_Auto_CBCT(Semi_CBCT):
                         'reg_type':reg,
                         'output_folder':kwargs['folder_output'],
                         'add_name':kwargs['add_in_namefile'],
+                        'DCMInput':kwargs['isDCMInput'],
                     }
             list_process.append({'Process':AREGProcess,'Parameter':parameter_areg_cbct,'Module':'AREG_CBCT for {}'.format(full_reg_struct[i]),'Display': DisplayAREGCBCT(nb_scan)})
 

@@ -50,6 +50,13 @@
       <description>Extension name for output files</description>
     </string>
 
+    <string>
+      <name>DCMInput</name>
+      <label>DCMInput</label>
+      <index>5</index>
+      <description>Is the Input in DCM Format</description>
+    </string>
+
     <!-- <string>
       <name>reg_lm</name>
       <label>reg_lm</label>

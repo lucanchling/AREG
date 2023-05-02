@@ -23,6 +23,12 @@ else:
     pip_install('SimpleITK -q')
 import SimpleITK as sitk
 
+try:
+    import dicom2nifti
+except ImportError:
+    pip_install('dicom2nifti -q')
+    import dicom2nifti
+
 """
 8888888888 8888888 888      8888888888  .d8888b.  
 888          888   888      888        d88P  Y88b 
@@ -543,3 +549,29 @@ def CompareScans(im1, im2):
 def translate(shortname):
     dic = {'CB': 'Cranial Base', 'MAND': 'Mandible', 'MAX': 'Maxilla'}
     return dic[shortname]
+
+def convertdicom2nifti(input_folder,output_folder=None):
+    patients_folders = [folder for folder in os.listdir(input_folder) if os.path.isdir(os.path.join(input_folder,folder)) and folder != 'NIFTI']
+
+    if output_folder is None:
+        output_folder = os.path.join(input_folder,'NIFTI')
+
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+        
+    for patient in patients_folders:
+        if not os.path.exists(os.path.join(output_folder,patient+".nii.gz")):    
+            print("Converting patient: {}...".format(patient))
+            current_directory = os.path.join(input_folder,patient)
+            try:
+                reader = sitk.ImageSeriesReader()
+                sitk.ProcessObject_SetGlobalWarningDisplay(False)
+                dicom_names = reader.GetGDCMSeriesFileNames(current_directory)
+                reader.SetFileNames(dicom_names)
+                image = reader.Execute()
+                sitk.ProcessObject_SetGlobalWarningDisplay(True)
+                sitk.WriteImage(image, os.path.join(output_folder,os.path.basename(current_directory)+'.nii.gz'))
+            except RuntimeError:
+                dicom2nifti.convert_directory(current_directory,output_folder)
+                nifti_file = search(output_folder,'nii.gz')['nii.gz'][0]
+                os.rename(nifti_file,os.path.join(output_folder,patient+".nii.gz"))

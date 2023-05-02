@@ -10,11 +10,15 @@ import SimpleITK as sitk
 fpath = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(fpath)
 
-from AREG_CBCT_utils import GetDictPatients, VoxelBasedRegistration, LoadOnlyLandmarks, applyTransformLandmarks, WriteJson, translate 
+from AREG_CBCT_utils import GetDictPatients, VoxelBasedRegistration, LoadOnlyLandmarks, applyTransformLandmarks, WriteJson, translate, convertdicom2nifti 
 
 def main(args):
 
     t1_folder, t2_folder, output_dir, reg_type, add_name = args.t1_folder[0], args.t2_folder[0], args.output_folder[0], args.reg_type[0], args.add_name[0]
+
+    if args.DCMInput[0] == 'true':
+        convertdicom2nifti(t1_folder)
+        convertdicom2nifti(t2_folder)
 
     patients = GetDictPatients(t1_folder,t2_folder,segmentationType=reg_type)
     
@@ -52,6 +56,7 @@ if __name__ == "__main__":
     parser.add_argument('reg_type',nargs=1)
     parser.add_argument('output_folder',nargs=1)
     parser.add_argument('add_name',nargs=1)
+    parser.add_argument('DCMInput',nargs=1)
     # parser.add_argument('reg_lm',nargs=1)
 
     args = parser.parse_args()

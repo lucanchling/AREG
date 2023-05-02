@@ -273,6 +273,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.dicchckbox = {}
         self.dicchckbox2 = {}
         self.display = Display
+        self.isDCMInput = False
         """
         exemple dic = {'teeth'=['A,....],'Type'=['O',...]}
         """
@@ -380,6 +381,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         # self.ui.ButtonSugestLmIOSSemi.clicked.connect(self.SelectSugestLandmark)
         self.ui.CbInputType.currentIndexChanged.connect(self.SwitchType)
         self.ui.CbModeType.currentIndexChanged.connect(self.SwitchType)
+        self.ui.CbCBCTInputType.currentIndexChanged.connect(self.SwitchCBCTInputType)
         self.ui.ButtonTestFiles.clicked.connect(self.TestFiles)
 
     """
@@ -397,7 +399,12 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                                                                                                                                                                     
 
     """
-
+    def SwitchCBCTInputType(self, index):
+        if index == 0: # NIFTI as Input
+            self.isDCMInput = False
+        if index == 1: # DCM as Input
+            self.isDCMInput = True
+       
     def SwitchMode(self, index):
         """Function to change the UI depending on the mode selected (Semi or Fully Automated)"""
         if index == 2:  # Semi-Automated
@@ -501,6 +508,17 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         self.HideComputeItems()
 
+        if self.type == "CBCT":
+            self.ui.CbCBCTInputType.setVisible(True)
+            self.ui.label_CBCTInputType.setVisible(True)
+            self.ui.label_CBCTInputType_2.setVisible(True)
+        
+        if self.type == "IOS" or (self.type == "CBCT" and self.ui.CbModeType.currentIndex != 0):
+            self.ui.CbCBCTInputType.setVisible(False)
+            self.ui.label_CBCTInputType.setVisible(False)
+            self.ui.label_CBCTInputType_2.setVisible(False)
+            self.isDCMInput = False
+        
         # best = ['Ba','N','RPo']
         # for checkbox in self.logic.iterillimeted(self.dicchckbox):
         #     if checkbox.text in best and checkbox.isEnabled():
@@ -572,18 +590,26 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     def TestFiles(self):
         """Function to download and select all the test files"""
-        name, url = self.ActualMeth.getTestFileList()
+        if self.isDCMInput:
+            name, url = self.ActualMeth.getTestFileListDCM()
+        else:
+            name, url = self.ActualMeth.getTestFileList()
 
         scan_folder = self.DownloadUnzip(
             url=url,
             directory=os.path.join(self.SlicerDownloadPath),
-            folder_name=os.path.join("Test_Files", name),
+            folder_name=os.path.join("Test_Files", name) if not self.isDCMInput else os.path.join("Test_Files", "DCM", name),
         )
         scan_folder_t1 = os.path.join(scan_folder, "T1")
         scan_folder_t2 = os.path.join(scan_folder, "T2")
         
-        nb_scans = self.ActualMeth.NumberScan(scan_folder_t1, scan_folder_t2)
-        error = self.ActualMeth.TestScan(scan_folder_t1, scan_folder_t2)
+        if self.isDCMInput:
+            nb_scans = self.ActualMeth.NumberScanDCM(scan_folder_t1, scan_folder_t2)
+            error = self.ActualMeth.TestScanDCM(scan_folder_t1, scan_folder_t2)
+        else:
+            nb_scans = self.ActualMeth.NumberScan(scan_folder_t1, scan_folder_t2)
+            error = self.ActualMeth.TestScan(scan_folder_t1, scan_folder_t2)
+
 
         if isinstance(error, str):
             qt.QMessageBox.warning(self.parent, "Warning", error)
@@ -611,8 +637,13 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     def CheckScan(self):
         """Function to test both t1 and t2 scan folders"""
-        nb_scans = self.ActualMeth.NumberScan(self.ui.lineEditScanT1LmPath.text, self.ui.lineEditScanT2LmPath.text)
-        error = self.ActualMeth.TestScan(self.ui.lineEditScanT1LmPath.text, self.ui.lineEditScanT2LmPath.text)
+        if self.isDCMInput:
+            nb_scans = self.ActualMeth.NumberScanDCM(self.ui.lineEditScanT1LmPath.text, self.ui.lineEditScanT2LmPath.text)
+            error = self.ActualMeth.TestScanDCM(self.ui.lineEditScanT1LmPath.text, self.ui.lineEditScanT2LmPath.text)
+        
+        else:
+            nb_scans = self.ActualMeth.NumberScan(self.ui.lineEditScanT1LmPath.text, self.ui.lineEditScanT2LmPath.text)
+            error = self.ActualMeth.TestScan(self.ui.lineEditScanT1LmPath.text, self.ui.lineEditScanT2LmPath.text)
 
         if isinstance(error, str):
             qt.QMessageBox.warning(self.parent, "Warning", error)
@@ -832,6 +863,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             model_folder_3=self.ui.lineEditModel3.text,
             add_in_namefile=self.ui.lineEditAddName.text,
             dic_checkbox=self.dicchckbox,
+            isDCMInput = self.isDCMInput,
         )
 
         # print('error',error)
@@ -850,6 +882,7 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 dic_checkbox=self.dicchckbox,
                 logPath=self.log_path,
                 merge_seg=self.ActualMeth.merge_seg_checkbox.isChecked() if self.ActualMeth.merge_seg_checkbox is not None else False,
+                isDCMInput = self.isDCMInput,
             )
 
             self.nb_extension_launch = len(self.list_Processes_Parameters)
