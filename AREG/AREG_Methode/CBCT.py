@@ -204,7 +204,7 @@ class Semi_CBCT(Methode):
     
 
     def getTestFileList(self):
-        return ("Semi-Automated", "https://github.com/lucanchling/Areg_CBCT/releases/download/TestFiles/TEST_Semi_AREG.zip")
+        return ("Semi-Automated", "https://github.com/lucanchling/Areg_CBCT/releases/download/TestFiles/SemiAuto.zip")
 
 
     def Process(self, **kwargs):
@@ -275,7 +275,7 @@ class Semi_CBCT(Methode):
 class Auto_CBCT(Semi_CBCT):
 
     def getTestFileList(self):
-        return ("Fully-Automated", "https://github.com/lucanchling/Areg_CBCT/releases/download/TestFiles/Test_Full_AREG.zip")
+        return ("Fully-Automated", "https://github.com/lucanchling/Areg_CBCT/releases/download/TestFiles/FullyAuto.zip")
     
     def TestScan(self, scan_folder_t1: str, scan_folder_t2: str):
         return super().TestScan(scan_folder_t1, scan_folder_t2, liste_keys = ['scanT1','scanT2'])
@@ -389,10 +389,10 @@ class Or_Auto_CBCT(Semi_CBCT):
                  })
 
     def getTestFileList(self):
-        return ("Oriented-Automated", "https://github.com/lucanchling/Areg_CBCT/releases/download/TestFiles/Test_Or_Full_AREG.zip")
+        return ("Oriented-Automated", "https://github.com/lucanchling/Areg_CBCT/releases/download/TestFiles/Or_FullyAuto.zip")
     
     def getTestFileListDCM(self):
-        return ("Oriented-Automated", "https://github.com/lucanchling/Areg_CBCT/releases/download/TestFiles/Test_Or_Full_DCM.zip")
+        return ("Oriented-Automated", "https://github.com/lucanchling/Areg_CBCT/releases/download/TestFiles/Or_FullyAuto_DCM.zip")
     
     def TestScan(self, scan_folder_t1: str, scan_folder_t2: str):
         return super().TestScan(scan_folder_t1, scan_folder_t2, liste_keys = ['scanT1','scanT2'])
