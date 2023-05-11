@@ -714,8 +714,8 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     def SearchModelSegOr(self, lineEdit, name):
         listmodel = self.ActualMeth.getSegOrModelList()
 
-        if self.type == "CBCT":
-            self.SearchModelALI()
+        # if self.type == "CBCT":
+        #     self.SearchModelALI()
 
         if type(listmodel) is tuple:
             model_folder = self.DownloadUnzip(
