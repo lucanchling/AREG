@@ -920,7 +920,15 @@ class AREGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.RunningUI(True)
 
     def onProcessUpdate(self, caller, event):
-        timer = f"Time : {time.time()-self.startTime:.2f}s"
+        #timer = f"Time : {time.time()-self.startTime:.2f}s"
+        currentTime = time.time() - self.startTime
+        if currentTime < 60:
+            timer = f"Time : {int(currentTime)}s"
+        elif currentTime < 3600:
+            timer = f"Time : {int(currentTime/60)}min and {int(currentTime%60)}s"
+        else:
+            timer = f"Time : {int(currentTime/3600)}h, {int(currentTime%3600/60)}min and {int(currentTime%60)}s"
+        
         self.ui.LabelTimer.setText(timer)
         progress = caller.GetProgress()
         # self.module_name = caller.GetModuleTitle() if self.module_name_bis is None else self.module_name_bis
