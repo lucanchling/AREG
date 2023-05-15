@@ -116,7 +116,7 @@ class Semi_CBCT(Methode):
                 out += dic[notfound]+' '
         return out
     
-    def TestScan(self, scan_folder_t1: str, scan_folder_t2: str, liste_keys = ['scanT1','scanT2','segT1','segT2']):
+    def TestScan(self, scan_folder_t1: str, scan_folder_t2: str, liste_keys = ['scanT1','scanT2','segT1']):
         out = ''
         scan_extension = [".nrrd", ".nrrd.gz", ".nii", ".nii.gz", ".gipl", ".gipl.gz"]
         if self.NumberScan(scan_folder_t1,scan_folder_t2) == 0 :
@@ -214,14 +214,24 @@ class Semi_CBCT(Methode):
 
         nb_scan = self.NumberScan(kwargs['input_t1_folder'],kwargs['input_t2_folder'])
 
-        list_process = []
+        centered_T2 = kwargs['input_t2_folder'] + '_Center'
+        parameter_pre_aso = {'input': kwargs['input_t2_folder'],
+                             'output_folder': centered_T2,
+                             'model_folder':os.path.join(kwargs['model_folder_2'],'PreASO'),
+                             'SmallFOV':False,
+                             'temp_folder': '../',
+                             'DCMInput':kwargs['isDCMInput'],
+                             }
         
+        PreOrientProcess = slicer.modules.pre_aso_cbct
+        list_process = [{'Process':PreOrientProcess,'Parameter':parameter_pre_aso,'Module':'Centering T2','Display': DisplayASOCBCT(nb_scan)}]
+
         # AREG CBCT PROCESS
         AREGProcess = slicer.modules.areg_cbct
         for i,reg in enumerate(reg_struct.split(' ')):
             parameter_areg_cbct = {
                         't1_folder':kwargs['input_t1_folder'],
-                        't2_folder':kwargs['input_t2_folder'],
+                        't2_folder':centered_T2,
                         'reg_type':reg,
                         'output_folder':kwargs['folder_output'],
                         'add_name':kwargs['add_in_namefile'],
@@ -313,6 +323,17 @@ class Auto_CBCT(Semi_CBCT):
 
         # print('AMASSS Mask Parameters:', parameter_amasss_mask_t1)
         # print()
+        centered_T2 = kwargs['input_t2_folder'] + '_Center'
+        parameter_pre_aso = {'input': kwargs['input_t2_folder'],
+                             'output_folder': centered_T2,
+                             'model_folder':os.path.join(kwargs['model_folder_2'],'PreASO'),
+                             'SmallFOV':False,
+                             'temp_folder': '../',
+                             'DCMInput':kwargs['isDCMInput'],
+                             }
+        
+        PreOrientProcess = slicer.modules.pre_aso_cbct
+        list_process.append({'Process':PreOrientProcess,'Parameter':parameter_pre_aso,'Module':'Centering T2','Display': DisplayASOCBCT(nb_scan)})
 
         # AREG CBCT PROCESS
         full_reg_struct = list_struct['Registration Type']
@@ -322,7 +343,7 @@ class Auto_CBCT(Semi_CBCT):
         for i,reg in enumerate(reg_struct.split(' ')):
             parameter_areg_cbct = {
                         't1_folder':kwargs['input_t1_folder'],
-                        't2_folder':kwargs['input_t2_folder'],
+                        't2_folder':centered_T2,
                         'reg_type':reg,
                         'output_folder':kwargs['folder_output'],
                         'add_name':kwargs['add_in_namefile'],
@@ -533,6 +554,18 @@ class Or_Auto_CBCT(Semi_CBCT):
 
         # print('AMASSS Mask Parameters:', parameter_amasss_mask_t1)
         # print()
+        centered_T2 = kwargs['input_t2_folder'] + '_Center'
+        parameter_pre_aso = {'input': kwargs['input_t2_folder'],
+                             'output_folder': centered_T2,
+                             'model_folder':os.path.join(kwargs['model_folder_2'],'PreASO'),
+                             'SmallFOV':False,
+                             'temp_folder': '../',
+                             'DCMInput':kwargs['isDCMInput'],
+                             }
+        
+        PreOrientProcess = slicer.modules.pre_aso_cbct
+        list_process.append({'Process':PreOrientProcess,'Parameter':parameter_pre_aso,'Module':'Centering T2','Display': DisplayASOCBCT(nb_scan)})
+
 
         # AREG CBCT PROCESS
         full_reg_struct = list_struct['Registration Type']
@@ -542,7 +575,7 @@ class Or_Auto_CBCT(Semi_CBCT):
         for i,reg in enumerate(reg_struct.split(' ')):
             parameter_areg_cbct = {
                         't1_folder':ASO_T1_Oriented,
-                        't2_folder':kwargs['input_t2_folder'],
+                        't2_folder':centered_T2,
                         'reg_type':reg,
                         'output_folder':kwargs['folder_output'],
                         'add_name':kwargs['add_in_namefile'],

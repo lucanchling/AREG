@@ -21,8 +21,9 @@ def main(args):
         convertdicom2nifti(t2_folder)
 
     patients = GetDictPatients(t1_folder,t2_folder,segmentationType=reg_type)
-    
+    print("{} Registration".format(translate(reg_type)))
     for patient,data in patients.items():
+        print("Working on patient: ", patient)
         outpath = os.path.join(output_dir,translate(reg_type),patient+'_OutReg')
         ScanOutPath, TransOutPath = os.path.join(outpath,patient+'_'+reg_type+'Scan'+add_name+'.nii.gz'),os.path.join(outpath,patient+'_'+reg_type+add_name+'_matrix.tfm')
 
