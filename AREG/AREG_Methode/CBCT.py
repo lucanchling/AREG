@@ -107,9 +107,9 @@ class Semi_CBCT(Methode):
     def ProperPrint(self,notfound_list):
         dic = {'scanT1':'T1 scan','scanT2':'T2 scan','segT1':'T1 segmentation','segT2':'T2 segmentation'}
         out = ''
-        if 'scanT1' and 'scanT2' in notfound_list:
+        if 'scanT1' in notfound_list and 'scanT2' in notfound_list:
             out += 'T1 and T2 scans\n'
-        elif 'segT1' and 'segT2' in notfound_list:
+        elif 'segT1' in notfound_list and 'segT2' in notfound_list:
             out += 'T1 and T2 segmentations\n'
         else:
             for notfound in notfound_list:
