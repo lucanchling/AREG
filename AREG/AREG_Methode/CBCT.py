@@ -162,7 +162,7 @@ class Semi_CBCT(Methode):
         return listchecked
     
     def DicLandmark(self):
-        return {'Registration Type':["Cranial Base","Mandible","Maxilla"],
+        return {'Regions of Reference for Registration':["Cranial Base","Mandible","Maxilla"],
                 'AMASSS Segmentation':['Cranial Base','Cervical Vertebra','Mandible','Maxilla','Skin','Upper Airway']}
 
     def TranslateModels(self,listeModels,mask=False):
