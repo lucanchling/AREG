@@ -49,7 +49,7 @@ class Semi_CBCT(Methode):
         return None
 
     def TestCheckbox(self,dic_checkbox):
-        list_landmark = self.CheckboxisChecked(dic_checkbox)['Registration Type']
+        list_landmark = self.CheckboxisChecked(dic_checkbox)['Regions of Reference for Registration']
         
         out = None
         if len(list_landmark) == 0:
@@ -209,7 +209,7 @@ class Semi_CBCT(Methode):
 
     def Process(self, **kwargs):
         list_struct = self.CheckboxisChecked(kwargs['dic_checkbox'])
-        full_reg_struct,full_seg_struct = list_struct['Registration Type'],list_struct['AMASSS Segmentation']
+        full_reg_struct,full_seg_struct = list_struct['Regions of Reference for Registration'],list_struct['AMASSS Segmentation']
         reg_struct,seg_struct = self.TranslateModels(full_reg_struct, False),self.TranslateModels(full_seg_struct, False)
 
         nb_scan = self.NumberScan(kwargs['input_t1_folder'],kwargs['input_t2_folder'])
@@ -294,7 +294,7 @@ class Auto_CBCT(Semi_CBCT):
 
         list_struct = self.CheckboxisChecked(kwargs['dic_checkbox'])
         
-        full_reg_struct = list_struct['Registration Type']
+        full_reg_struct = list_struct['Regions of Reference for Registration']
         reg_struct = self.TranslateModels(full_reg_struct, True)
         
         nb_scan = self.NumberScan(kwargs['input_t1_folder'], kwargs['input_t2_folder'])
@@ -336,7 +336,7 @@ class Auto_CBCT(Semi_CBCT):
         list_process.append({'Process':PreOrientProcess,'Parameter':parameter_pre_aso,'Module':'Centering T2','Display': DisplayASOCBCT(nb_scan)})
 
         # AREG CBCT PROCESS
-        full_reg_struct = list_struct['Registration Type']
+        full_reg_struct = list_struct['Regions of Reference for Registration']
         reg_struct = self.TranslateModels(full_reg_struct, False)
         
         AREGProcess = slicer.modules.areg_cbct
@@ -528,7 +528,7 @@ class Or_Auto_CBCT(Semi_CBCT):
         # ====================== AREG Process ======================
         list_struct = self.CheckboxisChecked(kwargs['dic_checkbox'])
         
-        full_reg_struct = list_struct['Registration Type']
+        full_reg_struct = list_struct['Regions of Reference for Registration']
         reg_struct = self.TranslateModels(full_reg_struct, True)
         
         # AMASSS PROCESS - MASK SEGMENTATIONS        
@@ -568,7 +568,7 @@ class Or_Auto_CBCT(Semi_CBCT):
 
 
         # AREG CBCT PROCESS
-        full_reg_struct = list_struct['Registration Type']
+        full_reg_struct = list_struct['Regions of Reference for Registration']
         reg_struct = self.TranslateModels(full_reg_struct, False)
         
         AREGProcess = slicer.modules.areg_cbct
